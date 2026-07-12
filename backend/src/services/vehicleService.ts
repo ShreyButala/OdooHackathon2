@@ -1,6 +1,19 @@
 import { vehicleRepository, VehicleFilters } from '../repositories/vehicleRepository';
 import { AppError } from '../utils/AppError';
-import { Prisma, VehicleStatus } from '@prisma/client';
+import { Prisma, VehicleStatus, Vehicle } from '@prisma/client';
+
+export const isVehicleDispatchable = (vehicle: Vehicle): { dispatchable: boolean; reason?: string } => {
+  if (vehicle.status === VehicleStatus.RETIRED) {
+    return { dispatchable: false, reason: 'Vehicle is RETIRED' };
+  }
+  if (vehicle.status === VehicleStatus.IN_SHOP) {
+    return { dispatchable: false, reason: 'Vehicle is IN_SHOP' };
+  }
+  if (vehicle.status === VehicleStatus.ON_TRIP) {
+    return { dispatchable: false, reason: 'Vehicle is already ON_TRIP' };
+  }
+  return { dispatchable: true };
+};
 
 export const vehicleService = {
   async create(data: Prisma.VehicleCreateInput) {
