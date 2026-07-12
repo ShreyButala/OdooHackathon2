@@ -14,22 +14,27 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    const name = userData.name || 'Fleet Manager';
+  const login = (userData, token) => {
+    const name = userData.name || 'User';
     const initials = name
       .split(' ')
       .map((n) => n[0])
       .join('')
       .slice(0, 2)
       .toUpperCase();
-    const u = { name, initials };
+    
+    const u = { ...userData, initials };
     setUser(u);
     localStorage.setItem('transitops-user', JSON.stringify(u));
+    if (token) {
+      localStorage.setItem('transitops-token', token);
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('transitops-user');
+    localStorage.removeItem('transitops-token');
   };
 
   return (

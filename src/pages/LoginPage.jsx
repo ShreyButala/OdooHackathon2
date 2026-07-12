@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Truck, Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../lib/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -26,18 +27,18 @@ export default function LoginPage() {
       return;
     }
 
-    setIsLoading(true);
-    // Simulate async auth (replace with real API call)
-    await new Promise((r) => setTimeout(r, 800));
-
-    // Extract name from email for initials
-    const name = email.split('@')[0].replace(/[._-]/g, ' ')
-      .split(' ')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-
-    login({ name });
-    navigate(from, { replace: true });
+    try {
+      setIsLoading(true);
+      const res = await api.post('/auth/login', { email, password });
+      const { user, token } = res.data;
+      
+      login(user, token);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Invalid email or password.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -155,11 +156,17 @@ export default function LoginPage() {
             {/* Demo hint */}
             <div className="text-center pt-2 border-t border-border">
               <p className="text-xs text-text-secondary leading-relaxed">
-                Demo mode — any email + password will work.
+                Demo Accounts:
                 <br />
-                <span className="font-semibold text-primary">
-                  Try: demo@transitops.com / fleet123
-                </span>
+                <span className="font-semibold text-primary">manager_trips2@example.com</span> (Manager)
+                <br />
+                <span className="font-semibold text-primary">dispatch2@example.com</span> (Dispatcher)
+                <br />
+                <span className="font-semibold text-primary">finance@example.com</span> (Finance)
+                <br />
+                <span className="font-semibold text-primary">safety_trips2@example.com</span> (Safety)
+                <br />
+                Password for all: <span className="font-semibold text-primary">Password123</span>
               </p>
             </div>
           </div>

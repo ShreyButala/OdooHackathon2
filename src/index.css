@@ -1,4 +1,5 @@
 @import url('https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700&display=swap');
+@import 'leaflet/dist/leaflet.css';
 @import "tailwindcss";
 
 /* Dark mode variant — scoped to .dark class on a parent element (dashboard root div) */

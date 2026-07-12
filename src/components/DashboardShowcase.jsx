@@ -14,6 +14,11 @@ import {
   Settings
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+import api from '../lib/api';
+import LiveMap from './LiveMap';
+
+
 import { Switch } from './ui/material-design-3-switch';
 import { Dock } from './ui/dock-two';
 
@@ -22,20 +27,32 @@ import { Dock } from './ui/dock-two';
  * Accepts isDark prop from DashboardPage to apply dark: context for all sub-components.
  */
 export default function DashboardShowcase({ isDark = false }) {
+  const { user } = useAuth();
+  const role = user?.role || 'FLEET_MANAGER';
+
   const [activeTab, setActiveTab] = useState('overview');
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
   const tabRefs = useRef([]);
   const containerRef = useRef(null);
 
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'vehicles', label: 'Vehicle Management', icon: Truck },
-    { id: 'trips', label: 'Trip Management', icon: MapPin },
-    { id: 'reports', label: 'Reports & Analytics', icon: TrendingUp },
-    { id: 'fuel', label: 'Fuel Analytics', icon: Fuel },
-    { id: 'maintenance', label: 'Maintenance', icon: Wrench },
-    { id: 'settings', label: 'Settings', icon: Settings }
+  const allTabs = [
+    { id: 'overview', label: 'Overview', icon: BarChart3, roles: ['FLEET_MANAGER', 'DISPATCHER', 'FINANCIAL_ANALYST', 'SAFETY_OFFICER'] },
+    { id: 'vehicles', label: 'Vehicle Management', icon: Truck, roles: ['FLEET_MANAGER', 'DISPATCHER'] },
+    { id: 'trips', label: 'Trip Management', icon: MapPin, roles: ['FLEET_MANAGER', 'DISPATCHER'] },
+    { id: 'reports', label: 'Reports & Analytics', icon: TrendingUp, roles: ['FLEET_MANAGER', 'FINANCIAL_ANALYST'] },
+    { id: 'fuel', label: 'Fuel Analytics', icon: Fuel, roles: ['FLEET_MANAGER', 'DISPATCHER'] },
+    { id: 'maintenance', label: 'Maintenance', icon: Wrench, roles: ['FLEET_MANAGER'] },
+    { id: 'settings', label: 'Settings', icon: Settings, roles: ['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] }
   ];
+
+  const tabs = allTabs.filter(t => t.roles.includes(role));
+
+  // Default active tab to the first available if current is not allowed
+  useEffect(() => {
+    if (!tabs.find(t => t.id === activeTab) && tabs.length > 0) {
+      setActiveTab(tabs[0].id);
+    }
+  }, [role, tabs, activeTab]);
 
   // Adjust sliding underline position when active tab changes or window resizes
   useEffect(() => {
@@ -58,23 +75,24 @@ export default function DashboardShowcase({ isDark = false }) {
     return () => window.removeEventListener('resize', handleResize);
   }, [activeTab]);
 
-  // Persistent bottom-center quick-action dock items
-  const dockItems = [
-    { icon: BarChart3, label: "Home", onClick: () => setActiveTab('overview') },
-    { icon: Truck, label: "Vehicles", onClick: () => setActiveTab('vehicles') },
-    { icon: MapPin, label: "Trips", onClick: () => setActiveTab('trips') },
-    { icon: Wrench, label: "Maintenance", onClick: () => setActiveTab('maintenance') },
-    { icon: Fuel, label: "Fuel", onClick: () => setActiveTab('fuel') },
-    { icon: TrendingUp, label: "Reports", onClick: () => setActiveTab('reports') },
-    { icon: Settings, label: "Settings", onClick: () => setActiveTab('settings') },
-    { 
+  // Persistent bottom-center quick-action dock items (filtered by role)
+  const dockItems = allTabs
+    .filter(t => t.roles.includes(role))
+    .map(t => ({
+      icon: t.icon,
+      label: t.label.split(' ')[0],
+      onClick: () => setActiveTab(t.id)
+    }));
+
+  if (['FLEET_MANAGER', 'DISPATCHER'].includes(role)) {
+    dockItems.push({ 
       icon: Plus, 
       label: "Add Trip", 
       onClick: () => {
         alert("Dispatch routing system triggered: Assigning optimal vehicle for Delhi -> Mumbai HQ!");
       } 
-    }
-  ];
+    });
+  }
 
   return (
     <div className="w-full bg-surface rounded-custom border border-border overflow-hidden shadow-sm font-sans">
@@ -140,17 +158,32 @@ export default function DashboardShowcase({ isDark = false }) {
 
 // 1. Overview Tab
 function OverviewTab() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/dashboard').then(res => {
+      setData(res.data);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading dashboard...</div>;
+
   const stats = [
-    { label: 'Active Vehicles', value: '412', change: '+12 today', icon: Truck },
-    { label: 'Trips Completed', value: '25,482', change: '99.8% on-time', icon: MapPin },
-    { label: 'Fuel Spend (MTD)', value: '₹14,20,500', change: '-4.2% efficiency gain', icon: Fuel },
-    { label: 'Pending Services', value: '8', change: '3 urgent alerts', icon: Wrench }
+    { label: 'Active Vehicles', value: data?.activeVehicles || 0, change: 'Live status', icon: Truck },
+    { label: 'Available Vehicles', value: data?.availableVehicles || 0, change: 'Ready for dispatch', icon: CheckCircle2 },
+    { label: 'Drivers On Duty', value: data?.driversOnDuty || 0, change: 'Active on road', icon: MapPin },
+    { label: 'Vehicles In Shop', value: data?.vehiclesInShop || 0, change: 'Currently in maintenance', icon: Wrench }
   ];
 
   const criticalAlerts = [
-    { id: 'AL-104', type: 'fuel', message: 'Sudden fuel drop detected: MH-12-QW-8842', time: '12 mins ago', severity: 'danger' },
-    { id: 'AL-105', type: 'maintenance', message: 'Engine diagnostic alert: KA-03-MM-4491', time: '45 mins ago', severity: 'warning' },
-    { id: 'AL-106', type: 'trip', message: 'Unscheduled stop detected: UP-16-AA-2390', time: '1 hr ago', severity: 'info' }
+    { id: 'AL-104', type: 'info', message: `Fleet utilization is at ${data?.fleetUtilization}%`, time: 'Just now', severity: 'info' },
+    { id: 'AL-105', type: 'trip', message: `${data?.tripsActive} trips are currently dispatched`, time: 'Just now', severity: 'info' },
+    { id: 'AL-106', type: 'trip', message: `${data?.tripsPending} trips are pending dispatch`, time: 'Just now', severity: 'warning' }
   ];
 
   return (
@@ -193,37 +226,9 @@ function OverviewTab() {
               <span className="text-xs font-semibold text-success">Live Tracking</span>
             </div>
           </div>
-          {/* Simulated Map Schematic */}
-          <div className="bg-background border border-border rounded-lg h-64 relative overflow-hidden flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#163A5F" strokeWidth="0.5" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#grid)" />
-            </svg>
-            <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 50 180 Q 200 60 400 120 T 600 200" fill="none" stroke="#E5E7EB" strokeWidth="3" strokeDasharray="5,5" />
-              <path d="M 120 220 Q 300 100 480 80 T 700 140" fill="none" stroke="#163A5F" strokeWidth="2" opacity="0.3" />
-              <path d="M 50 180 Q 200 60 400 120" fill="none" stroke="#C96C2B" strokeWidth="3" strokeDasharray="100" strokeDashoffset="50" className="animate-[dash_10s_linear_infinite]" />
-            </svg>
-            <div className="absolute top-1/4 left-1/4 flex flex-col items-center">
-              <div className="w-3 h-3 rounded-full bg-primary border-2 border-white shadow" />
-              <span className="text-[10px] font-semibold text-primary bg-surface px-1.5 py-0.5 rounded shadow mt-1">Delhi Hub</span>
-            </div>
-            <div className="absolute top-1/2 left-2/3 flex flex-col items-center">
-              <div className="w-3 h-3 rounded-full bg-success border-2 border-white shadow" />
-              <span className="text-[10px] font-semibold text-primary bg-surface px-1.5 py-0.5 rounded shadow mt-1">Mumbai HQ</span>
-            </div>
-            <div className="absolute bottom-1/4 left-1/2 flex flex-col items-center">
-              <div className="w-3 h-3 rounded-full bg-accent border-2 border-white shadow" />
-              <span className="text-[10px] font-semibold text-primary bg-surface px-1.5 py-0.5 rounded shadow mt-1">Pune Depot</span>
-            </div>
-            <div className="absolute top-[32%] left-[45%] flex items-center gap-1.5 bg-surface border border-border py-1 px-2 rounded-full shadow-lg">
-              <div className="w-2 h-2 rounded-full bg-success" />
-              <span className="text-[9px] font-bold text-primary font-sans">MH-12-TR-9981 (Active)</span>
-            </div>
+          {/* Leaflet Real Map integration */}
+          <div className="bg-background border border-border rounded-lg h-64 relative overflow-hidden flex items-center justify-center z-0">
+            <LiveMap />
           </div>
         </div>
 
@@ -261,13 +266,20 @@ function OverviewTab() {
 
 // 2. Vehicles Tab (Incorporates Switch component for "On Duty")
 function VehiclesTab() {
-  const vehicles = [
-    { id: 'V-8842', plate: 'MH-12-QW-8842', model: 'Tata Signa 4825.T', driver: 'Rajesh Kumar', type: 'Heavy Truck', status: 'In Transit', fuel: '74%' },
-    { id: 'V-4491', plate: 'KA-03-MM-4491', model: 'Ashok Leyland Partner', driver: 'Amit Sharma', type: 'LVC', status: 'Maintenance', fuel: '21%' },
-    { id: 'V-2390', plate: 'UP-16-AA-2390', model: 'BharatBenz 3523R', driver: 'Satish Pal', type: 'Medium Duty', status: 'Active', fuel: '92%' },
-    { id: 'V-7711', plate: 'MH-14-GH-7711', model: 'Tata Intra V30', driver: 'Vikram Singh', type: 'Mini Truck', status: 'Idle', fuel: '88%' },
-    { id: 'V-0504', plate: 'DL-01-EE-0504', model: 'Mahindra Blazo X', driver: 'Gurpreet Singh', type: 'Heavy Truck', status: 'In Transit', fuel: '45%' }
-  ];
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/vehicles').then(res => {
+      setVehicles(res.data.data || []);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading vehicles...</div>;
 
   return (
     <div className="bg-surface rounded-custom border border-border shadow-sm overflow-hidden">
@@ -306,26 +318,26 @@ function VehiclesTab() {
           <tbody className="divide-y divide-border">
             {vehicles.map((v) => (
               <tr key={v.id} className="hover:bg-background transition-colors">
-                <td className="p-4 font-mono font-bold text-primary">{v.id}</td>
-                <td className="p-4 font-semibold text-text">{v.plate}</td>
-                <td className="p-4 text-text-secondary">{v.model}</td>
-                <td className="p-4 text-text-secondary">{v.type}</td>
-                <td className="p-4 font-medium text-text">{v.driver}</td>
-                <td className="p-4 font-medium text-text">{v.fuel}</td>
+                <td className="p-4 font-mono font-bold text-primary">{v.id.substring(0,6)}</td>
+                <td className="p-4 font-semibold text-text">{v.registrationNumber}</td>
+                <td className="p-4 text-text-secondary">{v.vehicleName}</td>
+                <td className="p-4 text-text-secondary">{v.vehicleType}</td>
+                <td className="p-4 font-medium text-text">Unassigned</td>
+                <td className="p-4 font-medium text-text">N/A</td>
                 <td className="p-4 text-center">
                   <div className="inline-flex justify-center items-center">
                     <Switch 
                       size="sm" 
                       haptic="light" 
-                      defaultChecked={v.status === 'Active' || v.status === 'In Transit'} 
+                      checked={v.status === 'ON_TRIP'} 
                     />
                   </div>
                 </td>
                 <td className="p-4">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                    v.status === 'In Transit' ? 'bg-success/10 text-success' :
-                    v.status === 'Maintenance' ? 'bg-danger/10 text-danger' :
-                    v.status === 'Active' ? 'bg-primary/10 text-primary' :
+                    v.status === 'ON_TRIP' ? 'bg-success/10 text-success' :
+                    v.status === 'IN_SHOP' ? 'bg-danger/10 text-danger' :
+                    v.status === 'AVAILABLE' ? 'bg-primary/10 text-primary' :
                     'bg-warning/10 text-warning'
                   }`}>
                     {v.status}
@@ -342,12 +354,20 @@ function VehiclesTab() {
 
 // 3. Trips Tab
 function TripsTab() {
-  const trips = [
-    { id: 'T-9981', route: 'Delhi Hub → Mumbai HQ', driver: 'Rajesh Kumar', eta: '4 hrs', progress: 75, status: 'On Schedule' },
-    { id: 'T-9982', route: 'Pune Depot → Chennai Port', driver: 'Satish Pal', eta: 'Delayed (1.5h)', progress: 40, status: 'Delayed' },
-    { id: 'T-9983', route: 'Mumbai HQ → Nagpur Warehouses', driver: 'Gurpreet Singh', eta: '12 hrs', progress: 15, status: 'On Schedule' },
-    { id: 'T-9984', route: 'Kolkata Depot → Delhi Hub', driver: 'Vikram Singh', eta: 'Completed', progress: 100, status: 'Completed' }
-  ];
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/trips').then(res => {
+      setTrips(res.data.data || []);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading trips...</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -355,32 +375,32 @@ function TripsTab() {
         <div key={trip.id} className="bg-surface p-5 rounded-custom border border-border shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-mono font-bold text-accent">{trip.id}</span>
+              <span className="text-xs font-mono font-bold text-accent">{trip.id.substring(0,8)}</span>
               <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
-                trip.status === 'On Schedule' ? 'bg-success/10 text-success' :
-                trip.status === 'Delayed' ? 'bg-danger/10 text-danger' :
+                trip.status === 'COMPLETED' ? 'bg-success/10 text-success' :
+                trip.status === 'CANCELLED' ? 'bg-danger/10 text-danger' :
                 'bg-primary/10 text-primary'
               }`}>
                 {trip.status}
               </span>
             </div>
-            <h4 className="text-sm font-bold text-text mb-1">{trip.route}</h4>
-            <p className="text-xs text-text-secondary">Driver: <strong className="text-text font-medium">{trip.driver}</strong></p>
+            <h4 className="text-sm font-bold text-text mb-1">{trip.source} → {trip.destination}</h4>
+            <p className="text-xs text-text-secondary">Driver: <strong className="text-text font-medium">{trip.driver?.name || 'Unknown'}</strong></p>
           </div>
           <div className="mt-4 pt-4 border-t border-border">
             <div className="flex justify-between text-xs text-text-secondary mb-1">
-              <span>Progress</span>
-              <span>{trip.progress}%</span>
+              <span>Distance</span>
+              <span>{trip.actualDistance || trip.plannedDistance} km</span>
             </div>
             <div className="w-full bg-background h-1.5 rounded-full overflow-hidden mb-3">
               <div 
                 className="bg-primary h-full rounded-full transition-all duration-500" 
-                style={{ width: `${trip.progress}%` }}
+                style={{ width: trip.status === 'COMPLETED' ? '100%' : trip.status === 'DISPATCHED' ? '50%' : '0%' }}
               />
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-text-secondary">ETA / Status:</span>
-              <strong className="text-text font-semibold">{trip.eta}</strong>
+              <span className="text-text-secondary">Vehicle:</span>
+              <strong className="text-text font-semibold">{trip.vehicle?.registrationNumber || 'Unknown'}</strong>
             </div>
           </div>
         </div>
@@ -391,6 +411,21 @@ function TripsTab() {
 
 // 4. Reports Tab
 function ReportsTab() {
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/reports?revenue=50000').then(res => {
+      setReport(res.data);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading reports...</div>;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Chart 1: Vehicle Utilization */}
@@ -431,16 +466,24 @@ function ReportsTab() {
           <h4 className="text-sm font-semibold text-text mb-3">Operating Margins</h4>
           <div className="space-y-2">
             <div className="flex justify-between text-xs border-b border-border pb-2">
-              <span className="text-text-secondary">Fleet Cost per Km</span>
-              <strong className="text-text font-semibold">₹18.42</strong>
+              <span className="text-text-secondary">Total Operational Cost</span>
+              <strong className="text-text font-semibold">₹{report?.fleetSummary?.operationalCost || 0}</strong>
             </div>
             <div className="flex justify-between text-xs border-b border-border pb-2">
-              <span className="text-text-secondary">Average Trip Margin</span>
-              <strong className="text-success font-semibold">+24.8%</strong>
+              <span className="text-text-secondary">Average Fleet ROI</span>
+              <strong className="text-success font-semibold">{report?.fleetSummary?.roi || 0}%</strong>
+            </div>
+            <div className="flex justify-between text-xs border-b border-border pb-2">
+              <span className="text-text-secondary">Fuel Efficiency</span>
+              <strong className="text-text font-semibold">{report?.fleetSummary?.fuelEfficiency || 0} km/L</strong>
+            </div>
+            <div className="flex justify-between text-xs border-b border-border pb-2">
+              <span className="text-text-secondary">Maintenance Cost</span>
+              <strong className="text-danger font-semibold">₹{report?.fleetSummary?.maintenanceCost || 0}</strong>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-text-secondary">Idle Cost Losses</span>
-              <strong className="text-danger font-semibold">₹28,500</strong>
+              <span className="text-text-secondary">Expense Cost</span>
+              <strong className="text-warning font-semibold">₹{report?.fleetSummary?.expenseCost || 0}</strong>
             </div>
           </div>
         </div>
@@ -461,12 +504,20 @@ function ReportsTab() {
 
 // 5. Fuel Analytics Tab
 function FuelTab() {
-  const logs = [
-    { vehicle: 'MH-12-QW-8842', amount: '₹18,500', volume: '190 L', eff: '4.8 km/L', driver: 'Rajesh Kumar', date: 'Jul 11, 2026' },
-    { vehicle: 'UP-16-AA-2390', amount: '₹22,100', volume: '228 L', eff: '5.2 km/L', driver: 'Satish Pal', date: 'Jul 10, 2026' },
-    { vehicle: 'DL-01-EE-0504', amount: '₹14,200', volume: '145 L', eff: '4.5 km/L', driver: 'Gurpreet Singh', date: 'Jul 09, 2026' },
-    { vehicle: 'MH-14-GH-7711', amount: '₹6,400', volume: '66 L', eff: '12.4 km/L', driver: 'Vikram Singh', date: 'Jul 08, 2026' }
-  ];
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/fuel').then(res => {
+      setLogs(res.data.data || []);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading fuel logs...</div>;
 
   return (
     <div className="space-y-6">
@@ -507,12 +558,12 @@ function FuelTab() {
             <tbody className="divide-y divide-border">
               {logs.map((log, i) => (
                 <tr key={i} className="hover:bg-background transition-colors">
-                  <td className="p-4 font-semibold text-text">{log.vehicle}</td>
-                  <td className="p-4 font-bold text-primary">{log.amount}</td>
-                  <td className="p-4 text-text-secondary">{log.volume}</td>
-                  <td className="p-4 font-semibold text-text">{log.eff}</td>
-                  <td className="p-4 text-text-secondary">{log.driver}</td>
-                  <td className="p-4 text-text-secondary">{log.date}</td>
+                  <td className="p-4 font-semibold text-text">{log.vehicle?.registrationNumber || log.vehicleId.substring(0,8)}</td>
+                  <td className="p-4 font-bold text-primary">₹{log.cost}</td>
+                  <td className="p-4 text-text-secondary">{log.liters} L</td>
+                  <td className="p-4 font-semibold text-text">N/A</td>
+                  <td className="p-4 text-text-secondary">{log.trip?.driver?.name || 'Unassigned'}</td>
+                  <td className="p-4 text-text-secondary">{new Date(log.date).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -525,12 +576,20 @@ function FuelTab() {
 
 // 6. Maintenance Tab
 function MaintenanceTab() {
-  const issues = [
-    { vehicle: 'MH-12-QW-8842', issue: 'Scheduled Brake Pad Replacement', cost: '₹8,500', status: 'Completed', date: 'Jul 10, 2026' },
-    { vehicle: 'KA-03-MM-4491', issue: 'Engine Overheating Diagnostic Check', cost: '₹12,400', status: 'In Service', date: 'Jul 12, 2026' },
-    { vehicle: 'UP-16-AA-2390', issue: 'Suspension Bushing Replacement', cost: '₹6,200', status: 'Scheduled', date: 'Jul 15, 2026' },
-    { vehicle: 'DL-01-EE-0504', issue: 'Odometer Sensor Error Recalibration', cost: '₹3,800', status: 'Pending Approval', date: 'Jul 18, 2026' }
-  ];
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/maintenance').then(res => {
+      setIssues(res.data.data || []);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading maintenance logs...</div>;
 
   return (
     <div className="space-y-6">
@@ -573,16 +632,15 @@ function MaintenanceTab() {
             <tbody className="divide-y divide-border">
               {issues.map((issue, i) => (
                 <tr key={i} className="hover:bg-background transition-colors">
-                  <td className="p-4 font-semibold text-text">{issue.vehicle}</td>
-                  <td className="p-4 text-text-secondary">{issue.issue}</td>
-                  <td className="p-4 font-bold text-primary">{issue.cost}</td>
-                  <td className="p-4 text-text-secondary">{issue.date}</td>
+                  <td className="p-4 font-semibold text-text">{issue.vehicle?.registrationNumber || issue.vehicleId.substring(0,8)}</td>
+                  <td className="p-4 text-text-secondary">{issue.description}</td>
+                  <td className="p-4 font-bold text-primary">₹{issue.cost}</td>
+                  <td className="p-4 text-text-secondary">{new Date(issue.createdAt).toLocaleDateString()}</td>
                   <td className="p-4">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                      issue.status === 'Completed' ? 'bg-success/10 text-success' :
-                      issue.status === 'In Service' ? 'bg-primary/10 text-primary' :
-                      issue.status === 'Scheduled' ? 'bg-warning/10 text-warning' :
-                      'bg-danger/10 text-danger'
+                      issue.status === 'CLOSED' ? 'bg-success/10 text-success' :
+                      issue.status === 'ACTIVE' ? 'bg-danger/10 text-danger' :
+                      'bg-warning/10 text-warning'
                     }`}>
                       {issue.status}
                     </span>
