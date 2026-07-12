@@ -1,0 +1,135 @@
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Primary & Brand Colors */
+  --color-primary: #163A5F;
+  --color-accent: #C96C2B;
+  --color-background: #F5F7F8;
+  --color-surface: #FFFFFF;
+  --color-text: #111827;
+  --color-text-secondary: #6B7280;
+  --color-border: #E5E7EB;
+  
+  /* System States */
+  --color-success: #2F7A5F;
+  --color-warning: #D9A441;
+  --color-danger: #C94F4F;
+  
+  /* Radii & Borders */
+  --radius-custom: 16px;
+  
+  /* Transitions */
+  --animate-wave-settle: wave-settle 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Accessible visible focus outlines */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Unique Text Entrance (Staggered Blur, Scale, and Tilt) */
+@keyframes unique-text-entrance {
+  0% {
+    filter: blur(12px);
+    transform: translateY(28px) scale(0.75) rotate(-6deg);
+    opacity: 0;
+  }
+  60% {
+    filter: blur(3px);
+    transform: translateY(-6px) scale(1.04) rotate(1deg);
+    opacity: 0.85;
+  }
+  100% {
+    filter: blur(0);
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.wave-char {
+  opacity: 0;
+  transform: translateY(28px);
+  will-change: transform, opacity, filter;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.wave-container.active .wave-char {
+  animation: unique-text-entrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hover ripple floating effect per letter */
+.wave-char:hover {
+  transform: translateY(-8px) scale(1.2) rotate(4deg) !important;
+  color: var(--color-accent) !important;
+  cursor: default;
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .wave-char {
+    transform: none !important;
+    opacity: 0;
+  }
+  .wave-container.active .wave-char {
+    animation: fade-in 0.5s ease forwards !important;
+  }
+  .transition-all {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Custom Utilities */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.animate-dash {
+  stroke-dasharray: 8, 8;
+  animation: dash 15s linear infinite;
+}
+
+/* Opacity-only pulse animation for status pills */
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+.animate-pulse-opacity {
+  animation: pulse-opacity 2s ease-in-out infinite;
+}
+
