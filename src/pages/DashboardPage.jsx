@@ -139,3 +139,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+#DASHBOARD,HOMEPAGE AND LOGINPAGE IS WORKING FINE.
