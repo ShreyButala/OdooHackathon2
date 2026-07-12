@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../../../Downloads/hackathon/OdooHackathon2/dist"
+		},
+		{
+			"path": "../../../../../../Downloads/hackathon/OdooHackathon2/node_modules"
+		},
+		{
+			"path": "../../../../../../Downloads/hackathon/OdooHackathon2/public"
+		},
+		{
+			"path": "../../../../../../Downloads/hackathon/OdooHackathon2/src"
+		}
+	],
+	"settings": {}
+}
