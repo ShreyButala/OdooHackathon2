@@ -27,7 +27,7 @@ export const vehicleController = {
   },
 
   async findById(req: Request, res: Response) {
-    const vehicle = await vehicleService.findById(req.params.id);
+    const vehicle = await vehicleService.findById(req.params.id as string);
     res.status(200).json(vehicle);
   },
 
@@ -38,12 +38,12 @@ export const vehicleController = {
       throw new AppError(400, `Validation Error: ${errorMsg}`);
     }
 
-    const vehicle = await vehicleService.update(req.params.id, parsed.data as any);
+    const vehicle = await vehicleService.update(req.params.id as string, parsed.data as any);
     res.status(200).json(vehicle);
   },
 
   async remove(req: Request, res: Response) {
-    await vehicleService.remove(req.params.id);
+    await vehicleService.remove(req.params.id as string);
     res.status(204).send();
   }
 };
