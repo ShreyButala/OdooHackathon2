@@ -25,8 +25,8 @@ export const vehicleRepository = {
     const [data, total] = await Promise.all([
       client.vehicle.findMany({
         where,
-        skip: filters.skip,
-        take: filters.take,
+        ...(filters.skip !== undefined && { skip: filters.skip }),
+        ...(filters.take !== undefined && { take: filters.take }),
         orderBy: { createdAt: 'desc' }
       }),
       client.vehicle.count({ where })

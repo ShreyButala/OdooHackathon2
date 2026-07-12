@@ -25,8 +25,8 @@ export const maintenanceRepository = {
     const [data, total] = await Promise.all([
       client.maintenance.findMany({
         where,
-        skip: filters.skip,
-        take: filters.take,
+        ...(filters.skip !== undefined && { skip: filters.skip }),
+        ...(filters.take !== undefined && { take: filters.take }),
         orderBy: { createdAt: 'desc' },
         include: { vehicle: true }
       }),

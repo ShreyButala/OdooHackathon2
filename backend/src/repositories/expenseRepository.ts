@@ -32,8 +32,8 @@ export const expenseRepository = {
     const [data, total] = await Promise.all([
       client.expense.findMany({
         where,
-        skip: filters.skip,
-        take: filters.take,
+        ...(filters.skip !== undefined && { skip: filters.skip }),
+        ...(filters.take !== undefined && { take: filters.take }),
         orderBy: { date: 'desc' }
       }),
       client.expense.count({ where })

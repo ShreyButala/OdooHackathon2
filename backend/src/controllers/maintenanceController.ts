@@ -16,7 +16,7 @@ export const maintenanceController = {
   },
 
   async close(req: Request, res: Response) {
-    const record = await maintenanceService.close(req.params.id);
+    const record = await maintenanceService.close(req.params.id as string);
     res.status(200).json(record);
   },
 
@@ -32,7 +32,7 @@ export const maintenanceController = {
   },
 
   async findById(req: Request, res: Response) {
-    const record = await maintenanceService.findById(req.params.id);
+    const record = await maintenanceService.findById(req.params.id as string);
     res.status(200).json(record);
   }
 };

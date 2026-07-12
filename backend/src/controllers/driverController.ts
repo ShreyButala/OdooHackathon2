@@ -27,7 +27,7 @@ export const driverController = {
   },
 
   async findById(req: Request, res: Response) {
-    const driver = await driverService.findById(req.params.id);
+    const driver = await driverService.findById(req.params.id as string);
     res.status(200).json(driver);
   },
 
@@ -38,12 +38,12 @@ export const driverController = {
       throw new AppError(400, `Validation Error: ${errorMsg}`);
     }
 
-    const driver = await driverService.update(req.params.id, parsed.data as any);
+    const driver = await driverService.update(req.params.id as string, parsed.data as any);
     res.status(200).json(driver);
   },
 
   async remove(req: Request, res: Response) {
-    await driverService.remove(req.params.id);
+    await driverService.remove(req.params.id as string);
     res.status(204).send();
   }
 };

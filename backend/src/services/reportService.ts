@@ -3,7 +3,7 @@ import { TripStatus } from '@prisma/client';
 import { AppError } from '../utils/AppError';
 
 export const reportService = {
-  async getReports(query: { vehicleId?: string; revenue?: number }) {
+  async getReports(query: { vehicleId?: string | undefined; revenue?: number | undefined }) {
     const vehicleWhere = query.vehicleId ? { id: query.vehicleId } : {};
     
     const vehicles = await prisma.vehicle.findMany({
