@@ -10,7 +10,7 @@ import {
   DropdownSeparator,
 } from '../components/ui/basic-dropdown';
 import { Switch } from '../components/ui/material-design-3-switch';
-import DashboardShowcase from '../components/DashboardShowcase';
+import DashboardShowcase, { DashboardDock } from '../components/DashboardShowcase';
 
 const DARK_MODE_KEY = 'transitops-dark';
 
@@ -45,6 +45,9 @@ export default function DashboardPage() {
     logout();
     navigate('/');
   };
+
+  // Active tab lives here so both the Dock (fixed) and Showcase (content) share it
+  const [activeTab, setActiveTab] = useState('overview');
 
   return (
     <div
@@ -133,9 +136,16 @@ export default function DashboardPage() {
       </header>
 
       {/* ── Main Dashboard Content ── */}
-      <main className="flex-1 p-6 max-w-full overflow-x-hidden">
-        <DashboardShowcase isDark={isDark} />
+      <main className="flex-1 overflow-x-hidden pb-24">
+        <DashboardShowcase isDark={isDark} activeTab={activeTab} setActiveTab={setActiveTab} />
       </main>
+
+      {/* ── Fixed Bottom Dock (viewport-level, always visible) ── */}
+      <div className="fixed bottom-5 left-0 right-0 z-50 flex justify-center pointer-events-none">
+        <div className="pointer-events-auto">
+          <DashboardDock activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+      </div>
     </div>
   );
 }

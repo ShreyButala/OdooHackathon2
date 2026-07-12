@@ -9,6 +9,7 @@ interface DockProps {
     icon: LucideIcon;
     label: string;
     onClick?: () => void;
+    active?: boolean;
   }[];
 }
 
@@ -17,10 +18,11 @@ interface DockIconButtonProps {
   label: string;
   onClick?: () => void;
   className?: string;
+  active?: boolean;
 }
 
 const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
-  ({ icon: Icon, label, onClick, className }, ref) => {
+  ({ icon: Icon, label, onClick, className, active }, ref) => {
     const shouldReduceMotion = useReducedMotion();
 
     return (
@@ -31,7 +33,9 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
         onClick={onClick}
         className={cn(
           "relative group p-3 rounded-xl transition-colors font-sans",
-          "text-[#6B7280] hover:text-[#163A5F] hover:bg-[#163A5F]/[0.06]", // TransitOps hover styling (6% navy tint)
+          active
+            ? "text-[#163A5F] bg-[#163A5F]/[0.08] dark:text-[#C96C2B] dark:bg-[#C96C2B]/[0.12]"
+            : "text-[#6B7280] hover:text-[#163A5F] hover:bg-[#163A5F]/[0.06] dark:text-[#9CA6B4] dark:hover:text-[#F5F7F8] dark:hover:bg-[#FFFFFF]/[0.06]",
           className
         )}
       >
@@ -41,7 +45,7 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
         <span className={cn(
           "absolute -top-10 left-1/2 -translate-x-1/2",
           "px-2.5 py-1 rounded-lg text-xs font-bold font-sans tracking-wide uppercase shadow-sm",
-          "bg-white text-[#111827] border border-[#E5E7EB]",
+          "bg-white text-[#111827] border border-[#E5E7EB] dark:bg-[#132234] dark:text-[#F5F7F8] dark:border-[#22334A]",
           "opacity-0 group-hover:opacity-100",
           "transition-opacity duration-200 whitespace-nowrap pointer-events-none z-30"
         )}>
@@ -78,7 +82,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
           variants={floatingAnimation}
           className={cn(
             "flex items-center gap-2 p-2 rounded-2xl", // 16px/rounded-2xl radius, 8px/p-2 spacing
-            "bg-white border border-[#E5E7EB] shadow-md", // TransitOps "thin borders, soft shadows, no glassmorphism"
+            "bg-white border border-[#E5E7EB] shadow-md dark:bg-[#132234] dark:border-[#22334A]", // TransitOps "thin borders, soft shadows, no glassmorphism"
             "hover:shadow-lg transition-shadow duration-300"
           )}
         >

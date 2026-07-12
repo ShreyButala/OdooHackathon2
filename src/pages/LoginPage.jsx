@@ -418,7 +418,7 @@ export default function LoginPage() {
           <p className="text-sm text-center mt-4" style={{ color: '#6B7280' }}>
             Don't have an account?{' '}
             <Link
-              to="/#cta"
+              to="/signup"
               id="get-started-link"
               style={{
                 color: '#C96C2B',
