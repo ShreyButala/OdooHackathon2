@@ -3,7 +3,8 @@ import { useEffect, useState, useRef } from 'react';
 export default function TextMorph({ 
   words = ["trips", "routes", "maintenance", "analytics"], 
   widthClass = "w-[95px] sm:w-[110px] md:w-[150px] lg:w-[190px] xl:w-[220px]", 
-  className = "" 
+  className = "",
+  loop = false 
 }) {
   const [index, setIndex] = useState(0);
   const [isInView, setIsInView] = useState(false);
@@ -13,9 +14,10 @@ export default function TextMorph({
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setIsInView(true);
-        observer.unobserve(entry.target);
+      } else {
+        setIsInView(false); // Stop cycling when out of view
       }
-    }, { threshold: 0.5 });
+    }, { threshold: 0.1 });
 
     if (ref.current) {
       observer.observe(ref.current);
@@ -28,17 +30,21 @@ export default function TextMorph({
 
     const interval = setInterval(() => {
       setIndex((prevIndex) => {
-        if (prevIndex < words.length - 1) {
-          return prevIndex + 1;
+        if (loop) {
+          return (prevIndex + 1) % words.length;
         } else {
-          clearInterval(interval);
-          return prevIndex;
+          if (prevIndex < words.length - 1) {
+            return prevIndex + 1;
+          } else {
+            clearInterval(interval);
+            return prevIndex;
+          }
         }
       });
-    }, 1800); // Transitions every 1.8 seconds
+    }, 2200); // 2.2s dwell time per word
 
     return () => clearInterval(interval);
-  }, [isInView, words.length]);
+  }, [isInView, words.length, loop]);
 
   return (
     <span

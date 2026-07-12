@@ -43,7 +43,7 @@ function MagneticWord({ children, mousePos, disabled }) {
     const radius = 160;
     if (distance < radius) {
       const power = (radius - distance) / radius; // 0 to 1
-      // Soft push effect (max 5px)
+      // Soft push effect (max 5px) using 3D transform to keep document layout intact
       const shiftX = -(dx / distance) * 5 * power;
       const shiftY = -(dy / distance) * 5 * power;
       setTransform({ x: shiftX, y: shiftY });
@@ -76,8 +76,9 @@ export default function App() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0, active: false });
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
-  // Workflow Scroll Tracking States
+  // Workflow Trigger & Animation Progress States
   const workflowRef = useRef(null);
+  const [workflowInView, setWorkflowInView] = useState(false);
   const [workflowProgress, setWorkflowProgress] = useState(0);
 
   // Detect touch devices and prefers-reduced-motion media query
@@ -108,31 +109,53 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track scroll position in the Workflow section
+  // Workflow scroll-triggered fixed-timeline reveal animation
   useEffect(() => {
-    const handleScroll = () => {
-      if (!workflowRef.current) return;
-      const rect = workflowRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      
-      const elementTop = rect.top + window.scrollY;
-      const elementHeight = rect.height;
-      
-      // Starts filling when the section is partially visible, finishes before leaving
-      const startScroll = elementTop - windowHeight * 0.85;
-      const endScroll = elementTop + elementHeight - windowHeight * 0.45;
-      const currentScroll = window.scrollY;
-      
-      let progress = (currentScroll - startScroll) / (endScroll - startScroll);
-      progress = Math.max(0, Math.min(1, progress));
-      
+    if (prefersReducedMotion) {
+      setWorkflowProgress(1);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setWorkflowInView(true);
+      } else {
+        // Reset when scrolled back above the section (entry.boundingClientRect.top > 0)
+        if (entry.boundingClientRect.top > 0) {
+          setWorkflowInView(false);
+          setWorkflowProgress(0);
+        }
+      }
+    }, {
+      threshold: 0.15 // Triggers on entry when 15% of the section is visible
+    });
+
+    if (workflowRef.current) {
+      observer.observe(workflowRef.current);
+    }
+    return () => observer.disconnect();
+  }, [prefersReducedMotion]);
+
+  // Handle Workflow linear animation progress draw (0 to 1 over 1.5 seconds)
+  useEffect(() => {
+    if (!workflowInView || prefersReducedMotion || workflowProgress === 1) return;
+
+    const duration = 1500;
+    const startTime = performance.now();
+    let animId;
+
+    const animate = (time) => {
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / duration, 1);
       setWorkflowProgress(progress);
+      if (progress < 1) {
+        animId = requestAnimationFrame(animate);
+      }
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [workflowInView, prefersReducedMotion]);
 
   // Hero Section Mouse Handlers
   const handleMouseMove = (e) => {
@@ -144,19 +167,23 @@ export default function App() {
     setMousePos((prev) => ({ ...prev, active: false }));
   };
 
-  // Hero Headline Elements Definition (Integrating dynamic TextMorph)
-  const heroHeadlineElements = [
-    { type: 'text', text: "Modern", accent: false },
-    { type: 'text', text: "Transport", accent: false },
-    { type: 'text', text: "Operations.", accent: false },
+  // Headline Line 1: Modern Transport Operations.
+  const headlineLine1 = [
+    { text: "Modern", accent: false },
+    { text: "Transport", accent: false },
+    { text: "Operations.", accent: false }
+  ];
+
+  // Headline Line 2: One Intelligent [morphing word] (Only morphing word is orange)
+  const headlineLine2 = [
     { type: 'text', text: "One", accent: false },
+    { type: 'text', text: "Intelligent", accent: false },
     { 
       type: 'morph', 
-      words: ["Intelligent", "Efficient", "Connected", "Unified"], 
-      widthClass: "w-[125px] sm:w-[155px] md:w-[220px] lg:w-[280px] xl:w-[325px]", 
+      words: ["Platform", "System", "Network", "Solution"], 
+      widthClass: "w-[95px] sm:w-[110px] md:w-[155px] lg:w-[200px] xl:w-[235px]", 
       accent: true 
-    },
-    { type: 'text', text: "Platform.", accent: false }
+    }
   ];
 
   // Workflow Stages Definition
@@ -274,7 +301,7 @@ export default function App() {
         )}
       </nav>
 
-      {/* 3. Hero — Centered text, shorter copy, text morphing inside single-line headline */}
+      {/* 3. Hero — Centered layout, static headline on line 1, looping morph line on line 2, simple subhead */}
       <header 
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -282,32 +309,50 @@ export default function App() {
       >
         <div className="my-auto max-w-5xl space-y-8 relative z-10 mx-auto text-center flex flex-col items-center">
           
-          {/* Centered Headline with embedded TextMorph */}
+          {/* Centered Headline broken onto two lines, loops last word in accent orange */}
           <h1 
             style={{ fontSize: 'clamp(28px, 3.6vw, 64px)' }}
-            className="font-bold tracking-tighter select-none font-sans text-center max-w-none whitespace-normal md:whitespace-nowrap leading-tight"
+            className="font-bold tracking-tighter select-none font-sans text-center max-w-none leading-[1.1] flex flex-col items-center gap-2"
           >
-            {heroHeadlineElements.map((el, idx) => (
-              <span key={idx} className="inline-block">
-                <MagneticWord mousePos={mousePos} disabled={isTouchDevice || prefersReducedMotion}>
-                  {el.type === 'text' ? (
-                    <span className={el.accent ? "text-accent font-semibold" : "text-primary font-bold"}>
-                      {el.text}
+            {/* Headline Line 1: Modern Transport Operations. */}
+            <div className="whitespace-normal md:whitespace-nowrap">
+              {headlineLine1.map((w, idx) => (
+                <span key={idx} className="inline-block">
+                  <MagneticWord mousePos={mousePos} disabled={isTouchDevice || prefersReducedMotion}>
+                    <span className="text-primary font-bold">
+                      {w.text}
                     </span>
-                  ) : (
-                    <TextMorph 
-                      words={el.words} 
-                      widthClass={el.widthClass}
-                      className="text-accent font-semibold"
-                    />
-                  )}
-                </MagneticWord>
-                {idx < heroHeadlineElements.length - 1 && '\u00A0'}
-              </span>
-            ))}
+                  </MagneticWord>
+                  {idx < headlineLine1.length - 1 && '\u00A0'}
+                </span>
+              ))}
+            </div>
+
+            {/* Headline Line 2: One Intelligent [morphing word] */}
+            <div className="whitespace-normal md:whitespace-nowrap">
+              {headlineLine2.map((el, idx) => (
+                <span key={idx} className="inline-block">
+                  <MagneticWord mousePos={mousePos} disabled={isTouchDevice || prefersReducedMotion}>
+                    {el.type === 'text' ? (
+                      <span className={el.accent ? "text-accent font-semibold" : "text-primary font-bold"}>
+                        {el.text}
+                      </span>
+                    ) : (
+                      <TextMorph 
+                        words={el.words} 
+                        widthClass={el.widthClass}
+                        loop={true}
+                        className="text-accent font-semibold"
+                      />
+                    )}
+                  </MagneticWord>
+                  {idx < headlineLine2.length - 1 && '\u00A0'}
+                </span>
+              ))}
+            </div>
           </h1>
 
-          {/* Shorter copy centered */}
+          {/* Subheading centered */}
           <div className="max-w-2xl space-y-6 pt-4 text-center mx-auto flex flex-col items-center">
             <p className="text-base sm:text-lg text-text-secondary leading-relaxed font-normal">
               Consolidate your entire fleet, drivers, dispatch, maintenance, and analytics in one smart platform.
@@ -456,7 +501,7 @@ export default function App() {
         </div>
       </ScrollReveal>
 
-      {/* 7. Workflow Timeline Section — Scroll-linked drawing line */}
+      {/* 7. Workflow Timeline Section — Scroll-triggered reveal animation */}
       <div id="workflow" ref={workflowRef} className="w-full bg-primary text-white py-20 md:py-28 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto space-y-16 relative">
           <div className="max-w-3xl text-left">
