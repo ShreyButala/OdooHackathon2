@@ -5,4 +5,18 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // SPA fallback — serve index.html for all 404s so client-side routing works
+  // on direct navigation to /dashboard, /login, etc.
+  preview: {
+    port: 4173,
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
+    }
+  }
 })
+

@@ -30,8 +30,8 @@ export const tripRepository = {
     const [data, total] = await Promise.all([
       client.trip.findMany({
         where,
-        skip: filters.skip,
-        take: filters.take,
+        ...(filters.skip !== undefined && { skip: filters.skip }),
+        ...(filters.take !== undefined && { take: filters.take }),
         orderBy: { createdAt: 'desc' },
         include: { vehicle: true, driver: true }
       }),

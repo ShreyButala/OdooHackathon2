@@ -1,5 +1,9 @@
 @import url('https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700&display=swap');
+@import 'leaflet/dist/leaflet.css';
 @import "tailwindcss";
+
+/* Dark mode variant — scoped to .dark class on a parent element (dashboard root div) */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -25,6 +29,30 @@
   --animate-wave-settle: wave-settle 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
+/* ===== DASHBOARD-ONLY DARK MODE PALETTE ===== */
+/* Applied when .dark class is on the DashboardPage root div */
+.dark {
+  --color-background: #0B1420;
+  --color-surface: #132234;
+  --color-text: #F5F7F8;
+  --color-text-secondary: #9CA6B4;
+  --color-border: #22334A;
+  /* accent stays #C96C2B — pops on dark; primary stays #163A5F for branded elements */
+  --color-success: #3B9470;
+  --color-warning: #E0B050;
+  --color-danger: #D95F5F;
+}
+
+/* Smooth 200ms crossfade on theme switch — respects reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease !important;
+  }
+}
+
 @layer base {
   body {
     background-color: var(--color-background);
@@ -45,28 +73,28 @@
   }
 }
 
-/* Unique Text Entrance (Staggered Blur, Scale, and Tilt) */
+/* Unique Text Entrance (Staggered Blur and Scale) */
 @keyframes unique-text-entrance {
   0% {
     filter: blur(12px);
-    transform: translateY(28px) scale(0.75) rotate(-6deg);
+    transform: translateY(24px) scale(0.85);
     opacity: 0;
   }
-  60% {
-    filter: blur(3px);
-    transform: translateY(-6px) scale(1.04) rotate(1deg);
-    opacity: 0.85;
+  65% {
+    filter: blur(2px);
+    transform: translateY(-4px) scale(1.02);
+    opacity: 0.95;
   }
   100% {
     filter: blur(0);
-    transform: translateY(0) scale(1) rotate(0deg);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
 .wave-char {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(24px);
   will-change: transform, opacity, filter;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
 }
@@ -77,7 +105,7 @@
 
 /* Hover ripple floating effect per letter */
 .wave-char:hover {
-  transform: translateY(-8px) scale(1.2) rotate(4deg) !important;
+  transform: translateY(-8px) scale(1.15) !important;
   color: var(--color-accent) !important;
   cursor: default;
 }

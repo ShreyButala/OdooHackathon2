@@ -4,7 +4,7 @@ import { tripRepository } from '../repositories/tripRepository';
 import { AppError } from '../utils/AppError';
 
 export const fuelService = {
-  async create(data: { vehicleId: string; tripId?: string; liters: number; cost: number; date?: string }) {
+  async create(data: { vehicleId: string; tripId?: string | undefined; liters: number; cost: number; date?: string | undefined }) {
     const vehicle = await vehicleRepository.findById(data.vehicleId);
     if (!vehicle) throw new AppError(404, 'Vehicle not found');
 
@@ -19,7 +19,7 @@ export const fuelService = {
 
     return fuelLogRepository.create({
       vehicleId: data.vehicleId,
-      tripId: data.tripId,
+      tripId: data.tripId || null,
       liters: data.liters,
       cost: data.cost,
       date: data.date ? new Date(data.date) : new Date()

@@ -16,7 +16,7 @@ export const tripController = {
   },
 
   async dispatch(req: Request, res: Response) {
-    const trip = await tripService.dispatch(req.params.id);
+    const trip = await tripService.dispatch(req.params.id as string);
     res.status(200).json(trip);
   },
 
@@ -28,12 +28,12 @@ export const tripController = {
     }
 
     const { actualOdometer, fuelUsed, actualDistance } = parsed.data;
-    const trip = await tripService.complete(req.params.id, actualOdometer, fuelUsed, actualDistance);
+    const trip = await tripService.complete(req.params.id as string, actualOdometer, fuelUsed, actualDistance);
     res.status(200).json(trip);
   },
 
   async cancel(req: Request, res: Response) {
-    const trip = await tripService.cancel(req.params.id);
+    const trip = await tripService.cancel(req.params.id as string);
     res.status(200).json(trip);
   },
 
@@ -49,7 +49,7 @@ export const tripController = {
   },
 
   async findById(req: Request, res: Response) {
-    const trip = await tripService.findById(req.params.id);
+    const trip = await tripService.findById(req.params.id as string);
     res.status(200).json(trip);
   }
 };

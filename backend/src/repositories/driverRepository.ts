@@ -25,8 +25,8 @@ export const driverRepository = {
     const [data, total] = await Promise.all([
       client.driver.findMany({
         where,
-        skip: filters.skip,
-        take: filters.take,
+        ...(filters.skip !== undefined && { skip: filters.skip }),
+        ...(filters.take !== undefined && { take: filters.take }),
         orderBy: { name: 'asc' }
       }),
       client.driver.count({ where })

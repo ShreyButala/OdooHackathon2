@@ -4,7 +4,7 @@ import { AppError } from '../utils/AppError';
 import { ExpenseType } from '@prisma/client';
 
 export const expenseService = {
-  async create(data: { vehicleId: string; type: ExpenseType; amount: number; description: string; date?: string }) {
+  async create(data: { vehicleId: string; type: ExpenseType; amount: number; description: string; date?: string | undefined }) {
     const vehicle = await vehicleRepository.findById(data.vehicleId);
     if (!vehicle) throw new AppError(404, 'Vehicle not found');
 

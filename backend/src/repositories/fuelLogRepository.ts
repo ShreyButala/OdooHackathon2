@@ -32,8 +32,8 @@ export const fuelLogRepository = {
     const [data, total] = await Promise.all([
       client.fuelLog.findMany({
         where,
-        skip: filters.skip,
-        take: filters.take,
+        ...(filters.skip !== undefined && { skip: filters.skip }),
+        ...(filters.take !== undefined && { take: filters.take }),
         orderBy: { date: 'desc' }
       }),
       client.fuelLog.count({ where })
