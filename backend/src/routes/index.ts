@@ -4,6 +4,7 @@ import authRoutes from './authRoutes';
 import vehicleRoutes from './vehicleRoutes';
 import driverRoutes from './driverRoutes';
 import tripRoutes from './tripRoutes';
+import maintenanceRoutes from './maintenanceRoutes';
 
 const router = Router();
 
@@ -11,5 +12,6 @@ router.use('/auth', authRoutes);
 router.use('/vehicles', vehicleRoutes);
 router.use('/drivers', driverRoutes);
 router.use('/trips', tripRoutes);
+router.use('/maintenance', maintenanceRoutes);
 
 export default router;
