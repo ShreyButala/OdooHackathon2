@@ -1,8 +1,29 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Truck, Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: 'spring', stiffness: 300, damping: 24 },
+  },
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -42,75 +63,103 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans antialiased">
+    <div className="min-h-screen flex flex-col font-sans antialiased animate-colorful-mesh relative overflow-hidden text-text">
+      
+      {/* Decorative background elements (optional to enhance the mesh) */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] pointer-events-none mix-blend-overlay" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/20 rounded-full blur-[150px] pointer-events-none mix-blend-overlay" />
+
       {/* Top bar */}
-      <header className="w-full px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
-        <Link to="/" className="flex items-center gap-2 group" aria-label="Back to homepage">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white transition-transform duration-200 group-hover:scale-95">
-            <Truck className="w-4 h-4" />
+      <header className="w-full px-6 py-6 flex items-center justify-between max-w-7xl mx-auto relative z-10">
+        <Link to="/" className="flex items-center gap-3 group" aria-label="Back to homepage">
+          <div className="w-10 h-10 rounded-xl bg-white/40 backdrop-blur-md border border-white/60 flex items-center justify-center text-primary transition-all duration-300 group-hover:scale-105 shadow-md">
+            <Truck className="w-5 h-5" />
           </div>
-          <span className="text-lg font-bold text-primary tracking-tight">TransitOps</span>
+          <span className="text-xl font-black text-primary tracking-tight">TransitOps</span>
         </Link>
         <Link
           to="/"
-          className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary hover:text-primary transition-colors"
+          className="flex items-center gap-2 text-sm font-bold text-[#64748B] hover:text-primary transition-colors py-2 px-4 rounded-full bg-white/30 hover:bg-white/50 backdrop-blur-sm border border-white/40 shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" /> Back to site
         </Link>
       </header>
 
-      {/* Main login card */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
-          {/* Card */}
-          <div className="bg-white rounded-custom border border-border shadow-sm p-8 space-y-6">
-            {/* Heading */}
-            <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-primary tracking-tight">Welcome back</h1>
-              <p className="text-sm text-text-secondary">
-                Sign in to your TransitOps fleet console.
+      {/* Main login area */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
+        <motion.div 
+          className="w-full max-w-[420px]"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Light Glass Card */}
+          <div className="glass-panel-light rounded-[32px] p-8 sm:p-10 relative overflow-hidden shadow-2xl border border-white/60">
+            {/* Inner subtle glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-accent/20 rounded-full blur-[60px] pointer-events-none" />
+
+            <motion.div variants={itemVariants} className="space-y-2 mb-8 relative z-10">
+              <h1 className="text-3xl font-black text-primary tracking-tight">Welcome back</h1>
+              <p className="text-sm font-medium text-[#64748B]">
+                Sign in to your intelligent fleet console.
               </p>
-            </div>
+            </motion.div>
 
             {/* Error Banner */}
-            {error && (
-              <div className="flex items-start gap-2.5 bg-[#C94F4F]/5 border border-[#C94F4F]/20 rounded-lg px-3.5 py-3 text-sm text-[#C94F4F]">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span className="font-medium">{error}</span>
-              </div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginBottom: 24 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-start gap-3 bg-danger/10 border border-danger/20 rounded-xl px-4 py-3.5 text-sm text-danger backdrop-blur-md shadow-sm">
+                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                    <span className="font-bold leading-relaxed">{error}</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleSubmit} className="space-y-5 relative z-10" noValidate>
               {/* Email */}
-              <div className="space-y-1.5">
+              <motion.div variants={itemVariants} className="space-y-2">
                 <label
                   htmlFor="login-email"
-                  className="block text-xs font-bold text-primary"
+                  className="block text-[13px] font-bold text-primary"
                 >
-                  Email address
+                  Email Address
                 </label>
-                <input
-                  id="login-email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="fleet@transitops.com"
-                  className="w-full px-3.5 py-2.5 text-sm border border-border rounded-lg bg-background placeholder:text-text-secondary/60 text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  required
-                />
-              </div>
+                <div className="relative rounded-xl transition-all shadow-inner bg-white/50 border border-white/60">
+                  <input
+                    id="login-email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="manager@transitops.com"
+                    className="w-full px-4 py-3.5 text-sm bg-transparent placeholder:text-[#94A3B8] font-medium text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-xl transition-all"
+                    required
+                  />
+                </div>
+              </motion.div>
 
               {/* Password */}
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="login-password"
-                  className="block text-xs font-bold text-primary"
-                >
-                  Password
-                </label>
-                <div className="relative">
+              <motion.div variants={itemVariants} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="login-password"
+                    className="block text-[13px] font-bold text-primary"
+                  >
+                    Password
+                  </label>
+                  <a href="#" className="text-xs text-accent hover:text-accent/80 transition-colors font-bold">
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="relative rounded-xl transition-all shadow-inner bg-white/50 border border-white/60">
                   <input
                     id="login-password"
                     type={showPassword ? 'text' : 'password'}
@@ -118,13 +167,13 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-3.5 py-2.5 pr-10 text-sm border border-border rounded-lg bg-background placeholder:text-text-secondary/60 text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                    className="w-full px-4 py-3.5 pr-12 text-sm bg-transparent placeholder:text-[#94A3B8] font-medium text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 rounded-xl transition-all"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary transition-colors p-0.5"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-primary transition-colors p-1.5 rounded-md hover:bg-white/50"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -134,51 +183,51 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Submit */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary text-white text-sm font-semibold py-2.5 rounded-lg shadow-sm hover:bg-primary/95 transition-all hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-              >
-                {isLoading ? (
-                  <>
-                    <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                    Signing in…
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </button>
+              <motion.div variants={itemVariants} className="pt-3">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-primary text-white text-[15px] font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:bg-primary/95 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:-translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      Authenticating…
+                    </>
+                  ) : (
+                    'Sign In to Dashboard'
+                  )}
+                </button>
+              </motion.div>
             </form>
 
             {/* Demo hint */}
-            <div className="text-center pt-2 border-t border-border">
-              <p className="text-xs text-text-secondary leading-relaxed">
-                Demo Accounts:
-                <br />
-                <span className="font-semibold text-primary">manager_trips2@example.com</span> (Manager)
-                <br />
-                <span className="font-semibold text-primary">dispatch2@example.com</span> (Dispatcher)
-                <br />
-                <span className="font-semibold text-primary">finance@example.com</span> (Finance)
-                <br />
-                <span className="font-semibold text-primary">safety_trips2@example.com</span> (Safety)
-                <br />
-                Password for all: <span className="font-semibold text-primary">Password123</span>
-              </p>
-            </div>
+            <motion.div variants={itemVariants} className="mt-8 pt-6 border-t border-[#E2E8F0] relative z-10">
+              <div className="bg-white/60 backdrop-blur-md rounded-xl p-4 border border-white/50 shadow-sm text-center">
+                <span className="block font-bold text-primary mb-2 text-xs uppercase tracking-wider">Demo Accounts</span>
+                <p className="text-xs text-[#64748B] font-medium leading-relaxed">
+                  manager_trips2@example.com <br />
+                  dispatch2@example.com <br />
+                  finance@example.com <br />
+                  <span className="inline-block mt-3 px-3 py-1 bg-white/80 rounded-md border border-[#E2E8F0] font-bold text-primary">
+                    Password: <span className="text-accent">Password123</span>
+                  </span>
+                </p>
+              </div>
+            </motion.div>
           </div>
 
           {/* Back link */}
-          <p className="text-center text-xs text-text-secondary mt-6">
+          <motion.p variants={itemVariants} className="text-center text-sm font-medium text-[#64748B] mt-8 bg-white/40 backdrop-blur-md py-3 rounded-full border border-white/50 shadow-sm max-w-xs mx-auto">
             Don't have an account?{' '}
-            <Link to="/#cta" className="font-semibold text-primary hover:underline">
+            <Link to="/#cta" className="font-bold text-primary hover:text-accent transition-colors">
               Request access
             </Link>
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </main>
     </div>
   );

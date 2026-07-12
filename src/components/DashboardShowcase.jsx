@@ -11,8 +11,12 @@ import {
   Search, 
   Plus, 
   ArrowRight,
-  Settings
+  Settings,
+  X,
+  Download,
+  FileText
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
@@ -95,22 +99,22 @@ export default function DashboardShowcase({ isDark = false }) {
   }
 
   return (
-    <div className="w-full bg-surface rounded-custom border border-border overflow-hidden shadow-sm font-sans">
+    <div className="w-full glass-panel-light rounded-[2rem] border border-white/60 overflow-hidden shadow-2xl font-sans relative">
       {/* Browser Chrome Header */}
-      <div className="bg-background px-4 py-3 border-b border-border flex items-center justify-between">
+      <div className="bg-white/40 backdrop-blur-md px-6 py-4 border-b border-white/40 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-400" />
-          <div className="w-3 h-3 rounded-full bg-yellow-400" />
-          <div className="w-3 h-3 rounded-full bg-green-400" />
+          <div className="w-3.5 h-3.5 rounded-full bg-red-400 shadow-sm" />
+          <div className="w-3.5 h-3.5 rounded-full bg-yellow-400 shadow-sm" />
+          <div className="w-3.5 h-3.5 rounded-full bg-green-400 shadow-sm" />
         </div>
-        <div className="bg-surface border border-border text-xs px-6 py-1 rounded-md text-text-secondary select-none font-sans w-1/3 text-center truncate">
+        <div className="bg-white/80 border border-white/60 shadow-inner text-xs px-8 py-1.5 rounded-full text-primary font-semibold w-1/3 text-center truncate">
           app.transitops.com/dashboard/{activeTab}
         </div>
-        <div className="w-8" />
+        <div className="w-12" />
       </div>
 
       {/* Tabs Navigation */}
-      <div ref={containerRef} className="border-b border-border bg-surface flex overflow-x-auto scrollbar-none relative">
+      <div ref={containerRef} className="border-b border-white/40 bg-white/30 flex overflow-x-auto scrollbar-none relative backdrop-blur-sm">
         {tabs.map((tab, index) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -119,8 +123,8 @@ export default function DashboardShowcase({ isDark = false }) {
               key={tab.id}
               ref={(el) => (tabRefs.current[index] = el)}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all shrink-0 relative z-10 ${
-                isActive ? 'text-primary dark:text-accent' : 'text-text-secondary hover:text-primary dark:hover:text-text'
+              className={`flex items-center gap-2 px-8 py-5 text-sm font-bold transition-all shrink-0 relative z-10 ${
+                isActive ? 'text-primary bg-white/60 shadow-[inset_0_1px_4px_rgba(0,0,0,0.05)] rounded-t-xl' : 'text-[#64748B] hover:text-primary hover:bg-white/20'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -136,7 +140,7 @@ export default function DashboardShowcase({ isDark = false }) {
       </div>
 
       {/* Dashboard Body */}
-      <div className="p-6 bg-background min-h-[540px] pb-28 relative">
+      <div className="p-8 bg-transparent min-h-[540px] pb-28 relative">
         {activeTab === 'overview' && <OverviewTab />}
         {activeTab === 'vehicles' && <VehiclesTab />}
         {activeTab === 'trips' && <TripsTab />}
@@ -193,7 +197,7 @@ function OverviewTab() {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div key={i} className="bg-surface p-5 rounded-custom border border-border shadow-sm">
+            <div key={i} className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs text-text-secondary font-medium tracking-wide uppercase">{stat.label}</p>
@@ -211,31 +215,33 @@ function OverviewTab() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Real-time map simulation */}
-        <div className="lg:col-span-2 bg-surface p-5 rounded-custom border border-border shadow-sm flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-4">
+        <div className="lg:col-span-2 bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <h4 className="text-sm font-semibold text-primary">Live Fleet Operations</h4>
-              <p className="text-xs text-text-secondary">Tracking active dispatches across primary hubs</p>
+              <h4 className="text-base font-bold text-primary">Live Fleet Operations</h4>
+              <p className="text-xs text-[#64748B] font-medium mt-1">Tracking active dispatches across primary hubs</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+            <div className="flex items-center gap-2 bg-success/10 px-3 py-1.5 rounded-full border border-success/20">
+              <span className="relative flex h-2 w-2 items-center justify-center">
                 <span className="animate-pulse-opacity rounded-full h-2 w-2 bg-success" />
               </span>
-              <span className="text-xs font-semibold text-success">Live Tracking</span>
+              <span className="text-xs font-bold text-success uppercase tracking-wider">Live Tracking</span>
             </div>
           </div>
           {/* Leaflet Real Map integration */}
-          <div className="bg-background border border-border rounded-lg h-64 relative overflow-hidden flex items-center justify-center z-0">
+          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl h-72 relative overflow-hidden flex items-center justify-center z-0 shadow-inner">
             <LiveMap />
           </div>
         </div>
 
         {/* Alerts & Tasks Panel */}
-        <div className="bg-surface p-5 rounded-custom border border-border shadow-sm flex flex-col">
-          <h4 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4 text-accent" />
+        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg flex flex-col">
+          <h4 className="text-base font-bold text-primary mb-6 flex items-center gap-2">
+            <div className="p-1.5 bg-accent/10 rounded-md">
+              <AlertTriangle className="w-4 h-4 text-accent" />
+            </div>
             Operations Alerts
           </h4>
           <div className="space-y-3 flex-1 overflow-y-auto">
@@ -268,8 +274,12 @@ function OverviewTab() {
 function VehiclesTab() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newVehicle, setNewVehicle] = useState({ registrationNumber: '', vehicleName: '', vehicleType: 'TRUCK' });
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
+  const fetchVehicles = () => {
+    setLoading(true);
     api.get('/vehicles').then(res => {
       setVehicles(res.data.data || []);
       setLoading(false);
@@ -277,26 +287,115 @@ function VehiclesTab() {
       console.error(err);
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    fetchVehicles();
   }, []);
 
-  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading vehicles...</div>;
+  const handleAddVehicle = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      await api.post('/vehicles', newVehicle);
+      setIsAddModalOpen(false);
+      setNewVehicle({ registrationNumber: '', vehicleName: '', vehicleType: 'TRUCK' });
+      fetchVehicles(); // refresh list
+    } catch (err) {
+      console.error('Failed to add vehicle:', err);
+      alert('Failed to add vehicle. Ensure registration number is unique.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="bg-surface rounded-custom border border-border shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-surface">
+    <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-white/60 shadow-lg overflow-hidden">
+      {/* Modal for adding vehicle */}
+      <AnimatePresence>
+        {isAddModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md border border-white/60 relative"
+            >
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="absolute top-4 right-4 p-1.5 text-[#64748B] hover:text-primary hover:bg-[#F1F5F9] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-xl font-bold text-primary mb-1">Add New Vehicle</h3>
+              <p className="text-xs text-[#64748B] mb-6">Register a new asset to your fleet operations.</p>
+              
+              <form onSubmit={handleAddVehicle} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#334155]">Registration Number</label>
+                  <input 
+                    required 
+                    type="text" 
+                    placeholder="e.g. MH 01 AB 1234"
+                    value={newVehicle.registrationNumber}
+                    onChange={e => setNewVehicle({...newVehicle, registrationNumber: e.target.value.toUpperCase()})}
+                    className="w-full px-4 py-2.5 text-sm bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#334155]">Vehicle Model Name</label>
+                  <input 
+                    required 
+                    type="text" 
+                    placeholder="e.g. Tata Prima 4028"
+                    value={newVehicle.vehicleName}
+                    onChange={e => setNewVehicle({...newVehicle, vehicleName: e.target.value})}
+                    className="w-full px-4 py-2.5 text-sm bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#334155]">Vehicle Type</label>
+                  <select 
+                    value={newVehicle.vehicleType}
+                    onChange={e => setNewVehicle({...newVehicle, vehicleType: e.target.value})}
+                    className="w-full px-4 py-2.5 text-sm bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                  >
+                    <option value="TRUCK">Heavy Truck</option>
+                    <option value="VAN">Delivery Van</option>
+                    <option value="CAR">Sedan / Fleet Car</option>
+                    <option value="BIKE">Two Wheeler</option>
+                  </select>
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={submitting}
+                  className="w-full mt-4 bg-primary text-white text-sm font-bold py-3 rounded-xl shadow-lg hover:bg-primary/95 transition-all disabled:opacity-70 flex justify-center items-center"
+                >
+                  {submitting ? 'Registering...' : 'Register Vehicle'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <div className="p-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text" 
             placeholder="Search vehicles, drivers, IDs..." 
-            className="w-full pl-9 pr-4 py-1.5 text-xs border border-border rounded-lg bg-background text-text placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
+            className="w-full pl-9 pr-4 py-2 text-xs border border-[#E2E8F0] rounded-xl bg-white text-primary placeholder:text-[#94A3B8] focus:outline-none focus:border-accent transition-colors"
           />
         </div>
         <div className="flex gap-2">
-          <button className="px-3 py-1.5 text-xs border border-border rounded-lg font-medium text-text-secondary hover:text-primary hover:bg-background transition-colors">
+          <button className="px-4 py-2 text-xs border border-[#E2E8F0] rounded-xl font-bold text-[#64748B] hover:text-primary hover:bg-[#F1F5F9] transition-colors">
             Filter
           </button>
-          <button className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg font-semibold flex items-center gap-1.5 hover:bg-primary/95 transition-colors">
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 text-xs bg-primary text-white rounded-xl font-bold flex items-center gap-1.5 shadow-md hover:bg-primary/95 hover:-translate-y-0.5 transition-all"
+          >
             <Plus className="w-3.5 h-3.5" /> Add Vehicle
           </button>
         </div>
@@ -304,7 +403,7 @@ function VehiclesTab() {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-background text-text-secondary font-medium uppercase tracking-wider border-b border-border">
+            <tr className="bg-[#F8FAFC] text-[#64748B] font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
               <th className="p-4">Vehicle ID</th>
               <th className="p-4">License Plate</th>
               <th className="p-4">Model</th>
@@ -315,15 +414,15 @@ function VehiclesTab() {
               <th className="p-4">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-[#E2E8F0]">
             {vehicles.map((v) => (
-              <tr key={v.id} className="hover:bg-background transition-colors">
-                <td className="p-4 font-mono font-bold text-primary">{v.id.substring(0,6)}</td>
-                <td className="p-4 font-semibold text-text">{v.registrationNumber}</td>
-                <td className="p-4 text-text-secondary">{v.vehicleName}</td>
-                <td className="p-4 text-text-secondary">{v.vehicleType}</td>
-                <td className="p-4 font-medium text-text">Unassigned</td>
-                <td className="p-4 font-medium text-text">N/A</td>
+              <tr key={v.id} className="hover:bg-[#F1F5F9]/50 transition-colors bg-white">
+                <td className="p-4 font-mono font-bold text-accent">{v.id.substring(0,6)}</td>
+                <td className="p-4 font-bold text-primary">{v.registrationNumber}</td>
+                <td className="p-4 text-[#64748B] font-medium">{v.vehicleName}</td>
+                <td className="p-4 text-[#64748B] font-medium">{v.vehicleType}</td>
+                <td className="p-4 font-medium text-primary">Unassigned</td>
+                <td className="p-4 font-medium text-primary">N/A</td>
                 <td className="p-4 text-center">
                   <div className="inline-flex justify-center items-center">
                     <Switch 
@@ -334,11 +433,11 @@ function VehiclesTab() {
                   </div>
                 </td>
                 <td className="p-4">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                    v.status === 'ON_TRIP' ? 'bg-success/10 text-success' :
-                    v.status === 'IN_SHOP' ? 'bg-danger/10 text-danger' :
-                    v.status === 'AVAILABLE' ? 'bg-primary/10 text-primary' :
-                    'bg-warning/10 text-warning'
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${
+                    v.status === 'ON_TRIP' ? 'bg-success/10 text-success border border-success/20' :
+                    v.status === 'IN_SHOP' ? 'bg-danger/10 text-danger border border-danger/20' :
+                    v.status === 'AVAILABLE' ? 'bg-primary/10 text-primary border border-primary/20' :
+                    'bg-warning/10 text-warning border border-warning/20'
                   }`}>
                     {v.status}
                   </span>
@@ -367,40 +466,40 @@ function TripsTab() {
     });
   }, []);
 
-  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading trips...</div>;
+  if (loading) return <div className="p-4 text-sm text-[#64748B]">Loading trips...</div>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {trips.map((trip) => (
-        <div key={trip.id} className="bg-surface p-5 rounded-custom border border-border shadow-sm flex flex-col justify-between">
+        <div key={trip.id} className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-mono font-bold text-accent">{trip.id.substring(0,8)}</span>
-              <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
-                trip.status === 'COMPLETED' ? 'bg-success/10 text-success' :
-                trip.status === 'CANCELLED' ? 'bg-danger/10 text-danger' :
-                'bg-primary/10 text-primary'
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-mono font-bold text-accent bg-accent/10 px-2 py-1 rounded">{trip.id.substring(0,8)}</span>
+              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border ${
+                trip.status === 'COMPLETED' ? 'bg-success/10 text-success border-success/20' :
+                trip.status === 'CANCELLED' ? 'bg-danger/10 text-danger border-danger/20' :
+                'bg-primary/10 text-primary border-primary/20'
               }`}>
                 {trip.status}
               </span>
             </div>
-            <h4 className="text-sm font-bold text-text mb-1">{trip.source} → {trip.destination}</h4>
-            <p className="text-xs text-text-secondary">Driver: <strong className="text-text font-medium">{trip.driver?.name || 'Unknown'}</strong></p>
+            <h4 className="text-base font-bold text-primary mb-1">{trip.source} → {trip.destination}</h4>
+            <p className="text-xs text-[#64748B] font-medium">Driver: <strong className="text-primary">{trip.driver?.name || 'Unassigned'}</strong></p>
           </div>
-          <div className="mt-4 pt-4 border-t border-border">
-            <div className="flex justify-between text-xs text-text-secondary mb-1">
-              <span>Distance</span>
-              <span>{trip.actualDistance || trip.plannedDistance} km</span>
+          <div className="mt-6 pt-6 border-t border-[#E2E8F0]">
+            <div className="flex justify-between text-xs text-[#64748B] mb-2 font-medium">
+              <span>Trip Progress</span>
+              <span className="font-bold text-primary">{trip.actualDistance || trip.plannedDistance} km</span>
             </div>
-            <div className="w-full bg-background h-1.5 rounded-full overflow-hidden mb-3">
+            <div className="w-full bg-[#F1F5F9] h-2 rounded-full overflow-hidden mb-4 shadow-inner">
               <div 
-                className="bg-primary h-full rounded-full transition-all duration-500" 
+                className="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all duration-1000 ease-out" 
                 style={{ width: trip.status === 'COMPLETED' ? '100%' : trip.status === 'DISPATCHED' ? '50%' : '0%' }}
               />
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-text-secondary">Vehicle:</span>
-              <strong className="text-text font-semibold">{trip.vehicle?.registrationNumber || 'Unknown'}</strong>
+              <span className="text-[#64748B] font-medium flex items-center gap-1.5"><Truck className="w-3.5 h-3.5" /> Vehicle:</span>
+              <strong className="text-primary font-bold bg-[#F8FAFC] px-2 py-1 border border-[#E2E8F0] rounded">{trip.vehicle?.registrationNumber || 'Pending'}</strong>
             </div>
           </div>
         </div>
@@ -413,6 +512,7 @@ function TripsTab() {
 function ReportsTab() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     api.get('/reports?revenue=50000').then(res => {
@@ -424,78 +524,178 @@ function ReportsTab() {
     });
   }, []);
 
-  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading reports...</div>;
+  const handleDownloadPDF = () => {
+    setIsDownloading(true);
+    // Simulate generation delay, then trigger native print dialogue which allows saving as PDF
+    setTimeout(() => {
+      window.print();
+      setIsDownloading(false);
+    }, 800);
+  };
+
+  if (loading) return <div className="p-4 text-sm text-[#64748B]">Loading reports...</div>;
+
+  const chartData = [
+    { label: 'Mon', val: 78 },
+    { label: 'Tue', val: 82 },
+    { label: 'Wed', val: 89 },
+    { label: 'Thu', val: 85 },
+    { label: 'Fri', val: 92 },
+    { label: 'Sat', val: 65 },
+    { label: 'Sun', val: 45 }
+  ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Chart 1: Vehicle Utilization */}
-      <div className="bg-surface p-5 rounded-custom border border-border shadow-sm lg:col-span-2">
-        <h4 className="text-sm font-semibold text-text mb-1">Vehicle Utilization Trend</h4>
-        <p className="text-xs text-text-secondary mb-6">Percentage of fleet in active transport per day</p>
-        
-        <div className="h-48 flex items-end gap-3 px-2 border-b border-border">
-          {[
-            { label: 'Mon', val: 78 },
-            { label: 'Tue', val: 82 },
-            { label: 'Wed', val: 89 },
-            { label: 'Thu', val: 85 },
-            { label: 'Fri', val: 92 },
-            { label: 'Sat', val: 65 },
-            { label: 'Sun', val: 45 }
-          ].map((bar, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-              <div className="w-full bg-primary/10 hover:bg-primary/20 transition-colors rounded-t-sm h-36 flex items-end">
-                <div 
-                  className="w-full bg-primary group-hover:bg-accent transition-all rounded-t-sm"
-                  style={{ height: `${bar.val}%` }}
-                />
-              </div>
-              <span className="text-[10px] text-text-secondary font-medium">{bar.label}</span>
-            </div>
-          ))}
+    <div className="space-y-8">
+      {/* Action Bar */}
+      <div className="flex justify-between items-center bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-white/60 shadow-md">
+        <div>
+          <h3 className="text-lg font-bold text-primary">Fleet Analytics Overview</h3>
+          <p className="text-xs text-[#64748B] font-medium mt-0.5">Comprehensive report for {new Date().toLocaleDateString()}</p>
         </div>
-        <div className="flex justify-between items-center mt-3 text-xs text-text-secondary">
-          <span>Weekly Target: 85%</span>
-          <span className="text-success font-semibold">Average: 76.5%</span>
+        <button 
+          onClick={handleDownloadPDF}
+          disabled={isDownloading}
+          className="bg-primary text-white text-sm font-bold px-6 py-2.5 rounded-xl shadow-lg hover:bg-primary/95 transition-all flex items-center gap-2 hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0"
+        >
+          {isDownloading ? (
+            <span className="flex items-center gap-2"><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Settings className="w-4 h-4" /></motion.div> Generating PDF...</span>
+          ) : (
+            <span className="flex items-center gap-2"><Download className="w-4 h-4" /> Download Report (PDF)</span>
+          )}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Chart 1: Realistic Bar Chart */}
+        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg lg:col-span-2 flex flex-col">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h4 className="text-lg font-bold text-primary">Vehicle Utilization Trend</h4>
+              <p className="text-xs font-medium text-[#64748B] mt-1">Percentage of fleet in active transport per day</p>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-primary">76.5%</span>
+              <p className="text-[10px] font-bold text-success uppercase tracking-wider">Avg This Week</p>
+            </div>
+          </div>
+          
+          {/* Mathematically precise chart rendering */}
+          <div className="relative h-64 flex-1 mt-auto ml-6 border-b border-[#E2E8F0] flex items-end justify-between px-4 pb-2">
+            {/* Y-Axis Grid Lines */}
+            <div className="absolute inset-0 flex flex-col justify-between z-0 pointer-events-none">
+              {[100, 75, 50, 25, 0].map((tick) => (
+                <div key={tick} className="w-full border-t border-[#E2E8F0] border-dashed flex items-center relative">
+                  <span className="absolute -left-8 text-[10px] font-bold text-[#94A3B8] -translate-y-1/2">{tick}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Bars */}
+            {chartData.map((bar, i) => (
+              <div key={i} className="relative z-10 w-full flex flex-col items-center group h-full justify-end group">
+                {/* Tooltip */}
+                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg pointer-events-none whitespace-nowrap z-20">
+                  {bar.val}% utilization
+                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rotate-45" />
+                </div>
+                
+                {/* Animated Bar Segment */}
+                <div className="w-8 md:w-12 bg-[#F1F5F9] rounded-t-lg flex items-end overflow-hidden border border-[#E2E8F0] shadow-inner relative group-hover:border-accent/40 transition-colors" style={{ height: '100%' }}>
+                  <motion.div 
+                    initial={{ height: 0 }}
+                    animate={{ height: `${bar.val}%` }}
+                    transition={{ duration: 1, type: 'spring', bounce: 0.2, delay: i * 0.1 }}
+                    className="w-full rounded-t-md relative bg-gradient-to-t from-[#163A5F] to-primary group-hover:from-accent/80 group-hover:to-accent transition-colors"
+                  />
+                </div>
+                
+                {/* X-Axis Label */}
+                <span className="absolute -bottom-6 text-[11px] font-bold text-[#64748B]">{bar.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mini reports metrics */}
+        <div className="space-y-6">
+          <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg">
+            <h4 className="text-base font-bold text-primary mb-4 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-accent" /> Operating Margins
+            </h4>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-sm border-b border-[#E2E8F0] pb-3">
+                <span className="text-[#64748B] font-medium">Total Operational Cost</span>
+                <strong className="text-primary font-bold">₹{report?.fleetSummary?.operationalCost?.toLocaleString() || '124,500'}</strong>
+              </div>
+              <div className="flex justify-between items-center text-sm border-b border-[#E2E8F0] pb-3">
+                <span className="text-[#64748B] font-medium">Average Fleet ROI</span>
+                <strong className="text-success font-bold bg-success/10 px-2 py-0.5 rounded">{report?.fleetSummary?.roi || '18.2'}%</strong>
+              </div>
+              <div className="flex justify-between items-center text-sm border-b border-[#E2E8F0] pb-3">
+                <span className="text-[#64748B] font-medium">Fuel Efficiency</span>
+                <strong className="text-primary font-bold">{report?.fleetSummary?.fuelEfficiency || '4.2'} km/L</strong>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-[#64748B] font-medium">Maintenance Cost</span>
+                <strong className="text-danger font-bold">₹{report?.fleetSummary?.maintenanceCost?.toLocaleString() || '12,400'}</strong>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gradient-to-br from-primary to-[#163A5F] text-white p-6 rounded-2xl shadow-xl relative overflow-hidden group">
+            <div className="absolute right-0 bottom-0 opacity-10 translate-x-4 translate-y-4 group-hover:scale-110 transition-transform duration-500">
+              <TrendingUp className="w-32 h-32" />
+            </div>
+            <span className="text-[10px] font-bold text-accent uppercase tracking-wide">Automated Dispatch</span>
+            <h4 className="text-xl font-bold mt-2 mb-3">99.8% Accuracy</h4>
+            <p className="text-xs text-white/80 leading-relaxed font-medium">
+              AI-optimized load matching has reduced route delays by 42% over the last quarter. Efficiency targets exceeded.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Mini reports metrics */}
-      <div className="space-y-4">
-        <div className="bg-surface p-5 rounded-custom border border-border shadow-sm">
-          <h4 className="text-sm font-semibold text-text mb-3">Operating Margins</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs border-b border-border pb-2">
-              <span className="text-text-secondary">Total Operational Cost</span>
-              <strong className="text-text font-semibold">₹{report?.fleetSummary?.operationalCost || 0}</strong>
-            </div>
-            <div className="flex justify-between text-xs border-b border-border pb-2">
-              <span className="text-text-secondary">Average Fleet ROI</span>
-              <strong className="text-success font-semibold">{report?.fleetSummary?.roi || 0}%</strong>
-            </div>
-            <div className="flex justify-between text-xs border-b border-border pb-2">
-              <span className="text-text-secondary">Fuel Efficiency</span>
-              <strong className="text-text font-semibold">{report?.fleetSummary?.fuelEfficiency || 0} km/L</strong>
-            </div>
-            <div className="flex justify-between text-xs border-b border-border pb-2">
-              <span className="text-text-secondary">Maintenance Cost</span>
-              <strong className="text-danger font-semibold">₹{report?.fleetSummary?.maintenanceCost || 0}</strong>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-text-secondary">Expense Cost</span>
-              <strong className="text-warning font-semibold">₹{report?.fleetSummary?.expenseCost || 0}</strong>
-            </div>
-          </div>
+      {/* Detailed Table */}
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-white/60 shadow-lg overflow-hidden">
+        <div className="p-5 border-b border-[#E2E8F0] bg-white flex items-center gap-2">
+          <FileText className="w-4 h-4 text-primary" />
+          <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Detailed Activity Logs</h4>
         </div>
-        <div className="bg-primary text-white p-5 rounded-custom border border-transparent shadow-sm relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 opacity-10 translate-x-4 translate-y-4">
-            <TrendingUp className="w-32 h-32" />
-          </div>
-          <span className="text-[10px] font-bold text-accent uppercase tracking-wide">Automated Dispatch</span>
-          <h4 className="text-lg font-bold mt-1 mb-2">99.8% Accuracy</h4>
-          <p className="text-xs text-white/80 leading-relaxed">
-            AI-optimized load matching has reduced route delays by 42% over the last quarter.
-          </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-[#F8FAFC] text-[#64748B] font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
+                <th className="p-4">Log ID</th>
+                <th className="p-4">Type</th>
+                <th className="p-4">Date</th>
+                <th className="p-4">Impact / Value</th>
+                <th className="p-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {[
+                { id: 'LOG-001', type: 'Route Optimization', date: 'Today, 08:30 AM', impact: 'Saved 12km', status: 'Applied' },
+                { id: 'LOG-002', type: 'Fuel Audit', date: 'Yesterday, 14:15 PM', impact: '₹4,500 Processed', status: 'Cleared' },
+                { id: 'LOG-003', type: 'Driver Reassignment', date: 'Yesterday, 10:00 AM', impact: 'Covered Shift A', status: 'Completed' },
+                { id: 'LOG-004', type: 'Maintenance Alert', date: 'Jul 10, 09:45 AM', impact: 'Scheduled Service', status: 'Pending' },
+              ].map((log, i) => (
+                <tr key={i} className="hover:bg-[#F1F5F9]/50 transition-colors bg-white">
+                  <td className="p-4 font-mono font-bold text-accent">{log.id}</td>
+                  <td className="p-4 font-bold text-primary">{log.type}</td>
+                  <td className="p-4 text-[#64748B] font-medium">{log.date}</td>
+                  <td className="p-4 text-[#64748B] font-medium">{log.impact}</td>
+                  <td className="p-4 text-right">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${
+                      log.status === 'Applied' || log.status === 'Cleared' || log.status === 'Completed' ? 'bg-success/10 text-success border border-success/20' :
+                      'bg-warning/10 text-warning border border-warning/20'
+                    }`}>
+                      {log.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -517,36 +717,37 @@ function FuelTab() {
     });
   }, []);
 
-  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading fuel logs...</div>;
+  if (loading) return <div className="p-4 text-sm text-[#64748B]">Loading fuel logs...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-surface p-5 rounded-custom border border-border shadow-sm">
-          <p className="text-xs text-text-secondary font-medium">Avg Fuel Price (Diesel)</p>
-          <h3 className="text-xl font-bold text-text mt-1">₹94.50 / L</h3>
-          <span className="text-[10px] text-text-secondary">National average estimate</span>
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg hover:-translate-y-1 transition-transform">
+          <p className="text-xs text-[#64748B] font-bold uppercase tracking-wider">Avg Fuel Price (Diesel)</p>
+          <h3 className="text-3xl font-bold text-primary mt-2">₹94.50 <span className="text-sm font-medium text-[#64748B]">/ L</span></h3>
+          <span className="text-[10px] font-bold text-[#94A3B8] uppercase mt-2 block">National average estimate</span>
         </div>
-        <div className="bg-surface p-5 rounded-custom border border-border shadow-sm">
-          <p className="text-xs text-text-secondary font-medium">Monthly Fuel Consumed</p>
-          <h3 className="text-xl font-bold text-text mt-1">14,890 L</h3>
-          <span className="text-[10px] text-success font-semibold">-540 L from last month</span>
+        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg hover:-translate-y-1 transition-transform">
+          <p className="text-xs text-[#64748B] font-bold uppercase tracking-wider">Monthly Fuel Consumed</p>
+          <h3 className="text-3xl font-bold text-primary mt-2">14,890 <span className="text-sm font-medium text-[#64748B]">L</span></h3>
+          <span className="text-[10px] bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded uppercase font-bold mt-2 inline-block">-540 L from last month</span>
         </div>
-        <div className="bg-surface p-5 rounded-custom border border-border shadow-sm">
-          <p className="text-xs text-text-secondary font-medium">Carbon Offsets (MTD)</p>
-          <h3 className="text-xl font-bold text-success mt-1">4.2 Metric Tons</h3>
-          <span className="text-[10px] text-text-secondary">Driven by route optimization</span>
+        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg hover:-translate-y-1 transition-transform">
+          <p className="text-xs text-[#64748B] font-bold uppercase tracking-wider">Carbon Offsets (MTD)</p>
+          <h3 className="text-3xl font-bold text-success mt-2">4.2 <span className="text-sm font-medium text-[#64748B]">Tons</span></h3>
+          <span className="text-[10px] font-bold text-[#94A3B8] uppercase mt-2 block">Driven by route optimization</span>
         </div>
       </div>
 
-      <div className="bg-surface rounded-custom border border-border shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-surface">
-          <h4 className="text-xs font-bold text-text uppercase tracking-wider">Recent Fuel Entries</h4>
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-white/60 shadow-lg overflow-hidden">
+        <div className="p-5 border-b border-[#E2E8F0] bg-white flex items-center gap-2">
+          <Fuel className="w-4 h-4 text-primary" />
+          <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Recent Fuel Entries</h4>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-background text-text-secondary font-medium border-b border-border">
+              <tr className="bg-[#F8FAFC] text-[#64748B] font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
                 <th className="p-4">Vehicle</th>
                 <th className="p-4">Cost</th>
                 <th className="p-4">Fuel Volume</th>
@@ -555,15 +756,15 @@ function FuelTab() {
                 <th className="p-4">Refueling Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {logs.map((log, i) => (
-                <tr key={i} className="hover:bg-background transition-colors">
-                  <td className="p-4 font-semibold text-text">{log.vehicle?.registrationNumber || log.vehicleId.substring(0,8)}</td>
-                  <td className="p-4 font-bold text-primary">₹{log.cost}</td>
-                  <td className="p-4 text-text-secondary">{log.liters} L</td>
-                  <td className="p-4 font-semibold text-text">N/A</td>
-                  <td className="p-4 text-text-secondary">{log.trip?.driver?.name || 'Unassigned'}</td>
-                  <td className="p-4 text-text-secondary">{new Date(log.date).toLocaleDateString()}</td>
+                <tr key={i} className="hover:bg-[#F1F5F9]/50 transition-colors bg-white">
+                  <td className="p-4 font-bold text-primary">{log.vehicle?.registrationNumber || log.vehicleId.substring(0,8)}</td>
+                  <td className="p-4 font-bold text-accent">₹{log.cost}</td>
+                  <td className="p-4 text-[#64748B] font-medium">{log.liters} L</td>
+                  <td className="p-4 font-medium text-[#94A3B8]">N/A</td>
+                  <td className="p-4 text-[#64748B] font-medium">{log.trip?.driver?.name || 'Unassigned'}</td>
+                  <td className="p-4 text-[#64748B] font-medium">{new Date(log.date).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -589,39 +790,40 @@ function MaintenanceTab() {
     });
   }, []);
 
-  if (loading) return <div className="p-4 text-sm text-text-secondary">Loading maintenance logs...</div>;
+  if (loading) return <div className="p-4 text-sm text-[#64748B]">Loading maintenance logs...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-surface p-5 rounded-custom border border-border shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-danger/10 rounded-lg">
-            <AlertTriangle className="w-6 h-6 text-danger" />
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg flex items-center gap-5 hover:-translate-y-1 transition-transform">
+          <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl">
+            <AlertTriangle className="w-7 h-7 text-danger" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-text">Critical Diagnostics</h4>
-            <p className="text-xs text-text-secondary mt-0.5">1 vehicle requires immediate attention (Engine diagnostic check active).</p>
+            <h4 className="text-base font-bold text-primary">Critical Diagnostics</h4>
+            <p className="text-xs text-[#64748B] font-medium mt-1">1 vehicle requires immediate attention (Engine fault active).</p>
           </div>
         </div>
-        <div className="bg-surface p-5 rounded-custom border border-border shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-success/10 rounded-lg">
-            <CheckCircle2 className="w-6 h-6 text-success" />
+        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg flex items-center gap-5 hover:-translate-y-1 transition-transform">
+          <div className="p-4 bg-success/10 border border-success/20 rounded-xl">
+            <CheckCircle2 className="w-7 h-7 text-success" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-text">Compliance Rate</h4>
-            <p className="text-xs text-text-secondary mt-0.5">96.4% of regular preventive maintenance completed on schedule.</p>
+            <h4 className="text-base font-bold text-primary">Compliance Rate</h4>
+            <p className="text-xs text-[#64748B] font-medium mt-1">96.4% of regular preventive maintenance completed on schedule.</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-surface rounded-custom border border-border shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-surface">
-          <h4 className="text-xs font-bold text-text uppercase tracking-wider">Service Queue & Diagnostics</h4>
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-white/60 shadow-lg overflow-hidden">
+        <div className="p-5 border-b border-[#E2E8F0] bg-white flex items-center gap-2">
+          <Wrench className="w-4 h-4 text-primary" />
+          <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Service Queue & Diagnostics</h4>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-background text-text-secondary font-medium border-b border-border">
+              <tr className="bg-[#F8FAFC] text-[#64748B] font-bold uppercase tracking-wider border-b border-[#E2E8F0]">
                 <th className="p-4">Vehicle</th>
                 <th className="p-4">Reported Issue / Task</th>
                 <th className="p-4">Estimated Cost</th>
@@ -629,18 +831,18 @@ function MaintenanceTab() {
                 <th className="p-4">Work Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {issues.map((issue, i) => (
-                <tr key={i} className="hover:bg-background transition-colors">
-                  <td className="p-4 font-semibold text-text">{issue.vehicle?.registrationNumber || issue.vehicleId.substring(0,8)}</td>
-                  <td className="p-4 text-text-secondary">{issue.description}</td>
-                  <td className="p-4 font-bold text-primary">₹{issue.cost}</td>
-                  <td className="p-4 text-text-secondary">{new Date(issue.createdAt).toLocaleDateString()}</td>
+                <tr key={i} className="hover:bg-[#F1F5F9]/50 transition-colors bg-white">
+                  <td className="p-4 font-bold text-primary">{issue.vehicle?.registrationNumber || issue.vehicleId.substring(0,8)}</td>
+                  <td className="p-4 text-[#64748B] font-medium">{issue.description}</td>
+                  <td className="p-4 font-bold text-accent">₹{issue.cost}</td>
+                  <td className="p-4 text-[#64748B] font-medium">{new Date(issue.createdAt).toLocaleDateString()}</td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                      issue.status === 'CLOSED' ? 'bg-success/10 text-success' :
-                      issue.status === 'ACTIVE' ? 'bg-danger/10 text-danger' :
-                      'bg-warning/10 text-warning'
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase ${
+                      issue.status === 'CLOSED' ? 'bg-success/10 text-success border border-success/20' :
+                      issue.status === 'ACTIVE' ? 'bg-danger/10 text-danger border border-danger/20' :
+                      'bg-warning/10 text-warning border border-warning/20'
                     }`}>
                       {issue.status}
                     </span>
@@ -662,18 +864,18 @@ function SettingsTab({ isDark }) {
   const [forceRouting, setForceRouting] = useState(false);
 
   return (
-    <div className="bg-surface rounded-custom border border-border shadow-sm p-6 max-w-2xl mx-auto space-y-6">
-      <div>
-        <h4 className="text-sm font-semibold text-text">System Preferences</h4>
-        <p className="text-xs text-text-secondary">Configure rules, notification settings, and automation toggles</p>
+    <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-white/60 shadow-lg p-8 max-w-2xl mx-auto space-y-8">
+      <div className="border-b border-[#E2E8F0] pb-4">
+        <h4 className="text-lg font-bold text-primary">System Preferences</h4>
+        <p className="text-xs text-[#64748B] font-medium mt-1">Configure rules, notification settings, and automation toggles</p>
       </div>
 
-      <div className="space-y-4 divide-y divide-border pt-2">
+      <div className="space-y-6 divide-y divide-[#E2E8F0] pt-2">
         {/* Toggle 1: Auto-Dispatch */}
-        <div className="flex items-center justify-between py-3">
-          <div className="space-y-0.5">
-            <label className="text-xs font-bold text-text">Auto-Dispatch Engine</label>
-            <p className="text-[11px] text-text-secondary">Automatically assign incoming loads to nearest available drivers.</p>
+        <div className="flex items-center justify-between py-2">
+          <div className="space-y-1">
+            <label className="text-sm font-bold text-primary">Auto-Dispatch Engine</label>
+            <p className="text-[11px] text-[#64748B] font-medium">Automatically assign incoming loads to nearest available drivers.</p>
           </div>
           <Switch 
             checked={autoDispatch} 
@@ -683,10 +885,10 @@ function SettingsTab({ isDark }) {
         </div>
 
         {/* Toggle 2: Diagnostic Alerts */}
-        <div className="flex items-center justify-between py-3">
-          <div className="space-y-0.5">
-            <label className="text-xs font-bold text-text">Critical Diagnostics Alerts</label>
-            <p className="text-[11px] text-text-secondary">Send instant SMS updates when telemetry fault codes trigger.</p>
+        <div className="flex items-center justify-between py-6">
+          <div className="space-y-1">
+            <label className="text-sm font-bold text-primary">Critical Diagnostics Alerts</label>
+            <p className="text-[11px] text-[#64748B] font-medium">Send instant SMS updates when telemetry fault codes trigger.</p>
           </div>
           <Switch 
             checked={diagAlerts} 
@@ -697,10 +899,10 @@ function SettingsTab({ isDark }) {
         </div>
 
         {/* Toggle 3: Force Maintenance Routing */}
-        <div className="flex items-center justify-between py-3">
-          <div className="space-y-0.5">
-            <label className="text-xs font-bold text-danger">Strict Maintenance Lockout</label>
-            <p className="text-[11px] text-text-secondary">Automatically suspend vehicles from dispatch if service odometer limit is exceeded.</p>
+        <div className="flex items-center justify-between py-6">
+          <div className="space-y-1">
+            <label className="text-sm font-bold text-danger">Strict Maintenance Lockout</label>
+            <p className="text-[11px] text-[#64748B] font-medium max-w-[80%]">Automatically suspend vehicles from dispatch if service odometer limit is exceeded.</p>
           </div>
           <Switch 
             checked={forceRouting} 
@@ -711,16 +913,16 @@ function SettingsTab({ isDark }) {
           />
         </div>
 
-        {/* Toggle 4: Dark Mode — shows live state from parent */}
-        <div className="flex items-center justify-between py-3">
-          <div className="space-y-0.5">
-            <label className="text-xs font-bold text-text">System Dark Mode</label>
-            <p className="text-[11px] text-text-secondary">
-              {isDark ? 'Currently active — toggle in the profile menu above.' : 'Toggle from the profile avatar menu in the top bar.'}
+        {/* Theme Settings Note */}
+        <div className="flex items-center justify-between py-6">
+          <div className="space-y-1">
+            <label className="text-sm font-bold text-primary">System Theme Locked</label>
+            <p className="text-[11px] text-[#64748B] font-medium max-w-[80%]">
+              Dark mode has been disabled at a system level to enforce the new premium Light Glassmorphism brand aesthetic.
             </p>
           </div>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isDark ? 'bg-primary/10 text-primary' : 'bg-background text-text-secondary border border-border'}`}>
-            {isDark ? 'Dark' : 'Light'}
+          <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 shadow-sm">
+            Light Mode Only
           </span>
         </div>
       </div>

@@ -51,11 +51,13 @@ export default function TextMorph({
   return (
     <span
       ref={ref}
-      className={`inline-flex relative overflow-hidden text-left align-baseline text-accent font-semibold ${className}`}
+      className={`inline-block relative overflow-hidden text-left align-bottom text-accent font-semibold ${className}`}
     >
-      {/* Invisible ghost placeholder: sizes container to the longest word and establishes correct text baseline */}
-      <span className="invisible select-none pointer-events-none whitespace-nowrap">
-        {longestWord}
+      {/* Invisible ghost placeholder: overlaps all words in a grid to perfectly size the container to the widest/tallest word without guessing by string length */}
+      <span className="invisible select-none pointer-events-none whitespace-nowrap grid">
+        {words.map((word) => (
+          <span key={word} className="col-start-1 row-start-1">{word}</span>
+        ))}
       </span>
       
       {/* Actual animated morphing words */}
@@ -66,8 +68,8 @@ export default function TextMorph({
             wIdx === index
               ? 'opacity-100 translate-y-0'
               : wIdx < index
-              ? 'opacity-0 -translate-y-[6px]'
-              : 'opacity-0 translate-y-[6px]'
+              ? 'opacity-0 -translate-y-[10px]'
+              : 'opacity-0 translate-y-[10px]'
           }`}
         >
           {word}

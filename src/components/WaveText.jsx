@@ -18,8 +18,8 @@ export default function WaveText({ text = "Built for operations that never stop 
     return () => observer.disconnect();
   }, []);
 
-  // Split text into characters. Space is replaced with a non-breaking space.
-  const chars = Array.from(text);
+  const words = text.split(' ');
+  let globalCharIndex = 0;
 
   return (
     <h2
@@ -27,18 +27,36 @@ export default function WaveText({ text = "Built for operations that never stop 
       aria-label={text}
       className={`wave-container select-none leading-tight font-sans tracking-tight text-primary text-3xl md:text-5xl lg:text-6xl font-semibold ${isInView ? 'active' : ''} ${className}`}
     >
-      {chars.map((char, index) => (
-        <span
-          key={index}
-          aria-hidden="true"
-          className="wave-char inline-block"
-          style={{
-            animationDelay: `${index * 25}ms`,
-          }}
-        >
-          {char === ' ' ? '\u00A0' : char}
-        </span>
-      ))}
+      {words.map((word, wordIndex) => {
+        const wordNode = (
+          <span key={`word-${wordIndex}`} className="inline-block whitespace-nowrap">
+            {Array.from(word).map((char, charIndex) => {
+              const currentIdx = globalCharIndex++;
+              return (
+                <span
+                  key={`char-${currentIdx}`}
+                  aria-hidden="true"
+                  className="wave-char inline-block"
+                  style={{
+                    animationDelay: `${currentIdx * 25}ms`,
+                  }}
+                >
+                  {char}
+                </span>
+              );
+            })}
+          </span>
+        );
+        
+        globalCharIndex++; // account for space delay
+
+        return (
+          <span key={`group-${wordIndex}`}>
+            {wordNode}
+            {wordIndex < words.length - 1 && ' '}
+          </span>
+        );
+      })}
     </h2>
   );
 }
