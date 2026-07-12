@@ -2,13 +2,15 @@ import { useEffect, useState, useRef } from 'react';
 
 export default function TextMorph({ 
   words = ["trips", "routes", "maintenance", "analytics"], 
-  widthClass = "w-[95px] sm:w-[110px] md:w-[150px] lg:w-[190px] xl:w-[220px]", 
   className = "",
   loop = false 
 }) {
   const [index, setIndex] = useState(0);
   const [isInView, setIsInView] = useState(false);
   const ref = useRef(null);
+
+  // Find the longest word programmatically to act as the hidden placeholder
+  const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, "");
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -49,8 +51,14 @@ export default function TextMorph({
   return (
     <span
       ref={ref}
-      className={`inline-block relative overflow-hidden h-[1.15em] text-left align-baseline text-accent font-semibold ${widthClass} ${className}`}
+      className={`inline-flex relative overflow-hidden text-left align-baseline text-accent font-semibold ${className}`}
     >
+      {/* Invisible ghost placeholder: sizes container to the longest word and establishes correct text baseline */}
+      <span className="invisible select-none pointer-events-none whitespace-nowrap">
+        {longestWord}
+      </span>
+      
+      {/* Actual animated morphing words */}
       {words.map((word, wIdx) => (
         <span
           key={word}
@@ -58,8 +66,8 @@ export default function TextMorph({
             wIdx === index
               ? 'opacity-100 translate-y-0'
               : wIdx < index
-              ? 'opacity-0 -translate-y-[8px]'
-              : 'opacity-0 translate-y-[8px]'
+              ? 'opacity-0 -translate-y-[6px]'
+              : 'opacity-0 translate-y-[6px]'
           }`}
         >
           {word}
