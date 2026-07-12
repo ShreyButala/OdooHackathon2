@@ -1,8 +1,9 @@
 import { Router } from 'express';
 
+import authRoutes from './authRoutes';
+
 const router = Router();
 
-// Define route groups here
-// e.g. router.use('/vehicles', vehicleRoutes);
+router.use('/auth', authRoutes);
 
 export default router;

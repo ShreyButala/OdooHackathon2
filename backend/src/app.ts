@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import routes from './routes';
 
+import { errorHandler } from './middlewares/errorHandler';
+
 const app = express();
 
 // Middlewares
@@ -17,5 +19,8 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes
 app.use('/api', routes);
+
+// Error Handler
+app.use(errorHandler);
 
 export default app;
